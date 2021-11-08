@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 import re
-
+import getpass
 import airsim
 import numpy as np
 import open3d as o3d
@@ -129,7 +129,7 @@ for frame in tqdm(range(0, df.shape[0], args.step)):
 
 # Save the point cloud
 pcd_name = 'points_seg' if args.seg else 'points_rgb'
-pcd_path = os.path.join(run + "-" + pcd_name + '.pcd')
+pcd_path = os.path.join(data_path,pcd_name + '.pcd')
 o3d.io.write_point_cloud(pcd_path, pcd)
 
 # Visualize

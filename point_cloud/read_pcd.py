@@ -10,5 +10,4 @@ def read(file):
     o3d.visualization.draw_geometries([pcd])
 
 if __name__ == "__main__":
-    path = input("Enter path of file to read:\n")
-    read(path)
+    read(argv[1])

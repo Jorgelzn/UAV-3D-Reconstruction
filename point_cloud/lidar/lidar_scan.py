@@ -1,4 +1,8 @@
 import airsim
+import os
+import getpass
+
+from airsim.client import VehicleClient
 
 def convert(filename):
     print ("the input file name is:%r." %filename)
@@ -13,9 +17,9 @@ def convert(filename):
     file.close()
 
     #output = open("out.pcd","w+")
-    f_prefix = filename.split('.')[0]
-    output_filename = '{prefix}.pcd'.format(prefix=f_prefix)
-    output = open(output_filename,"w+")
+    prefix = filename.split('.')[0]
+    output_filename = f"{prefix}.pcd"
+    output = open("C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+output_filename,"w+")
 
     list = ['# .PCD v.5 - Point Cloud Data file format\n','VERSION .5\n','FIELDS x y z\n','SIZE 4 4 4\n','TYPE F F F\n','COUNT 1 1 1\n']
 
@@ -27,11 +31,11 @@ def convert(filename):
     output.write('\nPOINTS ')
     output.write(str(count))
     output.write('\nDATA ascii\n')
-    file1 = open(filename,"r")
-    all = file1.read()
+    file = open(filename,"r")
+    all = file.read()
     output.write(all)
     output.close()
-    file1.close()
+    file.close()
 
 
 class Lidar:
@@ -65,10 +69,16 @@ class Lidar:
         except KeyboardInterrupt:
             airsim.wait_key('Press any key to stop running this script')
             print("Done!\n")
-            convert(f"{vehicle_name}_{lidar_name}_pointcloud.asc")
 
 # main
 if __name__ == "__main__":
-    lidarTest = Lidar()
-    lidarTest.execute('Drone1',['LidarSensor1'])
+    lidar = Lidar()
+    vehicle = 'Drone1'
+    lidar_sensors = ['LidarSensor1']
+
+    lidar.execute(vehicle,lidar_sensors)
+
+    for lidar_name in lidar_sensors:
+        convert(f"{vehicle}_{lidar_name}_pointcloud.asc")
+        os.remove(f"{vehicle}_{lidar_name}_pointcloud.asc")
     
