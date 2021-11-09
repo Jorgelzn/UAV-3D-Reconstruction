@@ -8,7 +8,7 @@ from mavsdk.mission import (MissionItem, MissionPlan)
 
 async def run():
     drone = System()
-    await drone.connect(system_address="udp://:14540")
+    await drone.connect(system_address="udp://:14550")
 
     print("Waiting for drone to connect...")
     async for state in drone.core.connection_state():
@@ -24,9 +24,8 @@ async def run():
         observe_is_in_air(drone, running_tasks))
 
     mission_items = []
-    mission_items.append(MissionItem(47.398039859999997,
-                                     8.5455725400000002,
-                                     25,
+    mission_items.append(MissionItem(40.54493183291919, -4.013189779266727,
+                                     20,
                                      10,
                                      True,
                                      float('nan'),
@@ -36,30 +35,7 @@ async def run():
                                      float('nan'),
                                      float('nan'),
                                      float('nan')))
-    mission_items.append(MissionItem(47.398036222362471,
-                                     8.5450146439425509,
-                                     25,
-                                     10,
-                                     True,
-                                     float('nan'),
-                                     float('nan'),
-                                     MissionItem.CameraAction.NONE,
-                                     float('nan'),
-                                     float('nan'),
-                                     float('nan'),
-                                     float('nan')))
-    mission_items.append(MissionItem(47.397825620791885,
-                                     8.5450092830163271,
-                                     25,
-                                     10,
-                                     True,
-                                     float('nan'),
-                                     float('nan'),
-                                     MissionItem.CameraAction.NONE,
-                                     float('nan'),
-                                     float('nan'),
-                                     float('nan'),
-                                     float('nan')))
+
 
     mission_plan = MissionPlan(mission_items)
 

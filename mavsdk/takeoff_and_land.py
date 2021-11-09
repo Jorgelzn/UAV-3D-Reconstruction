@@ -29,7 +29,7 @@ async def run():
 
     await asyncio.sleep(5)
 
-    await drone.action.goto_location(40.544389, -4.012101, 5, 0)
+    await drone.action.goto_location(40.5448873794242, -4.013283378291143, 5, 0)
 
     await asyncio.sleep(5)
 
