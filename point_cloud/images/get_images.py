@@ -27,9 +27,15 @@ def create_folders():
     return directory
 
 
-def take_photo(client,record_path,img_number):
+def take_photo(client,record_path,img_number,file):
 
     responses = client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
+
+    #registrar posiciones de la camara
+    file.write("%f %f %f %f %f %f %f\n" %
+                  (responses[0].camera_position.x_val, responses[0].camera_position.y_val, responses[0].camera_position.z_val,
+                   responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val,
+                   responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val))
 
     # get numpy array
     photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8) 
@@ -50,7 +56,7 @@ def record(client,fps):
 
         clock = time.time()
         if clock-frame>fps:
-            take_photo(client,directory+"/color_images",img_number)
+            take_photo(client,directory+"/color_images",img_number,file)
             img_number+=1
             frame =clock
 
@@ -76,6 +82,8 @@ def start_record(key):
 if __name__=="__main__":
 
     client = airsim.VehicleClient()
+    client.confirmConnection()
+
     print("press R to start recording")
     print("Press S to stop recording")
     print("press e to exit")
