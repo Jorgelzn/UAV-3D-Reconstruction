@@ -11,7 +11,7 @@
   },
   "Vehicles": {
       "Drone1": {
-        "VehicleType": "SimpleFlight",
+        "VehicleType": "PX4Multirotor",
         "DefaultVehicleState": "Armed",
         "UseSerial": false,
         "LockStep": true,
@@ -43,7 +43,7 @@
             "NAV_RCL_ACT": 0,
             "NAV_DLL_ACT": 0,
             "COM_OBL_ACT": 1,
-            "LPE_LAT": 40.544289,
+            "LPE_LAT": 40.544389,
             "LPE_LON": -4.012101
           }
       }

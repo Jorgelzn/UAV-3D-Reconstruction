@@ -1,8 +1,7 @@
 import airsim
 import os
-import getpass
-
-from airsim.client import VehicleClient
+from mavsdk import System
+import asyncio
 
 def convert(filename):
     print ("the input file name is:%r." %filename)
@@ -19,7 +18,7 @@ def convert(filename):
     #output = open("out.pcd","w+")
     prefix = filename.split('.')[0]
     output_filename = f"{prefix}.pcd"
-    output = open("C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+output_filename,"w+")
+    output = open("./"+output_filename,"w+")
 
     list = ['# .PCD v.5 - Point Cloud Data file format\n','VERSION .5\n','FIELDS x y z\n','SIZE 4 4 4\n','TYPE F F F\n','COUNT 1 1 1\n']
 
@@ -46,12 +45,24 @@ class Lidar:
         self.client = airsim.VehicleClient()
         self.client.confirmConnection()
         print('Connected!\n')
+        self.drone = asyncio.ensure_future(self.droneConnect())
+
+    async def droneConnect(self):
+        # Init the drone
+        drone = System()
+        await self.drone.connect(system_address="udp://:14550")
+        return drone
+
+    async def print_gps_info(self):
+        async for gps_info in self.drone.telemetry.gps_info():
+            print(f"GPS info: {gps_info}")
 
     def execute(self,vehicle_name,lidar_names):
         print('Scanning Has Started\n')
         existing_data_cleared = False   #change to true to superimpose new scans onto existing .asc files
         try:
             while True:
+                asyncio.ensure_future(self.print_gps_info())
                 for lidar_name in lidar_names:
                     filename = f"{vehicle_name}_{lidar_name}_pointcloud.asc"
                     if not existing_data_cleared:
