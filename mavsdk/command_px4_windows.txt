@@ -1,0 +1,7 @@
+go to px4 folder
+
+execute .bat
+
+cd Firmware
+
+make px4_sitl_default none_iris

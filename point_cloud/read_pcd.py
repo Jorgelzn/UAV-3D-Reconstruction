@@ -1,6 +1,7 @@
 import open3d as o3d
 from sys import argv
 import numpy as np
+import getpass
 
 def read(file):
     print("Load a ply point cloud, print it, and render it")
@@ -10,4 +11,7 @@ def read(file):
     o3d.visualization.draw_geometries([pcd])
 
 if __name__ == "__main__":
-    read(argv[1])
+    sensor = 1
+    file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+"Drone1_LidarSensor"+str(sensor)+"_pointcloud.pcd"
+    file2 = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/test.pcd"
+    read(file)

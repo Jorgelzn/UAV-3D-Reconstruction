@@ -19,13 +19,14 @@ def convert(filename):
     output_filename = f"{prefix}.pcd"
     output = open("C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+output_filename,"w+")
 
-    list = ['# .PCD v.5 - Point Cloud Data file format\n','VERSION .5\n','FIELDS x y z\n','SIZE 4 4 4\n','TYPE F F F\n','COUNT 1 1 1\n']
+    list = ['# .PCD v.7 - Point Cloud Data file format\n','VERSION .7\n','FIELDS x y z rgb\n','SIZE 4 4 4 4\n','TYPE F F F F\n','COUNT 1 1 1 1\n']
 
     output.writelines(list)
-    output. write ('WIDTH') # Note that there are spaces behind it
+    output.write ('WIDTH ') # Note that there are spaces behind it
     output.write(str(count))
-    output.write('\nHEIGHT')
-    output. write (str(1))# mandatory type conversion, file input can only be STR format
+    output.write('\nHEIGHT ')
+    output.write (str(1))# mandatory type conversion, file input can only be STR format
+    output.write("\nVIEWPOINT 0 0 0 1 0 0 0")
     output.write('\nPOINTS ')
     output.write(str(count))
     output.write('\nDATA ascii\n')
@@ -60,8 +61,10 @@ class Lidar:
 
                     for i in range(0, len(lidar_data.point_cloud), 3):
                         xyz = lidar_data.point_cloud[i:i+3]
-                        
-                        f.write("%f %f %f %d %d %d \n" % (xyz[0],xyz[1],xyz[2],255,255,0))
+                        rgb = [100,0,250]
+                        rgb_encoded= (rgb[0] << 16) | (rgb[1]<< 8) | (rgb[2])
+                        #rgb_encoded= ((rgb[0] & 0x00FF0000) << 16) | ((rgb[1] & 0x0000FF00) << 8) | (rgb[2] & 0x000000FF)
+                        f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb_encoded))
                     f.close()
                 existing_data_cleared = True
         except KeyboardInterrupt:
