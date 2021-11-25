@@ -58,6 +58,7 @@ class Lidar:
                 responses = self.client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
                 photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
                 img = photo.reshape(responses[0].height, responses[0].width, 3)
+                img = img[...,::-1]   #brg to rgb
                 #print(img.shape)
                 for lidar_name in lidar_names:
                     filename = f"{vehicle_name}_{lidar_name}_pointcloud.asc"
@@ -73,9 +74,9 @@ class Lidar:
                             xyz = lidar_data.point_cloud[i:i+3]
                             pixel = int(i/3)
                             print("pixel:",pixel)
-                            r = img[pixel][350][0]
-                            g = img[pixel][350][1]
-                            b = img[pixel][350][2]
+                            r = img[399-pixel][350][0]
+                            g = img[399-pixel][350][1]
+                            b = img[399-pixel][350][2]
                             print(r,g,b)
                             rgb = int('%02x%02x%02x' % (r, g, b), 16)
                             f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
