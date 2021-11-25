@@ -1,0 +1,68 @@
+{
+    "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/master/docs/settings_json.md",
+    "SettingsVersion": 1.2,
+  
+    "SimMode": "Multirotor",
+    "ClockType": "SteppableClock",
+    "SubWindows": [
+      {"WindowID": 0, "ImageType": 0, "CameraName": "front", "Visible": true}
+    ],
+    "OriginGeopoint": {
+      "Latitude": 40.544289,
+      "Longitude": -4.012101,
+      "Altitude": 122
+    },
+    "Vehicles": {
+        "Drone1": {
+          "VehicleType": "PX4Multirotor",
+          "DefaultVehicleState": "Armed",
+          "UseSerial": false,
+          "LockStep": true,
+          "UseTcp": true,
+          "TcpPort": 4560,
+          "ControlIp": "remote",
+          "ControlPortLocal": 14540,
+          "ControlPortRemote": 14580,
+          "QgcPort": 14550,
+            "Sensors": {
+                "LidarSensor1": { 
+                  "SensorType": 6,
+                  "Enabled" : true,
+                  "NumberOfChannels": 1,
+                  "RotationsPerSecond": 10,
+                  "Range":12,
+                  "PointsPerSecond": 8000,
+                  "X": 0, "Y": 0, "Z": -1,
+                  "Roll": 90, "Pitch": 90, "Yaw" : 0,
+                  "VerticalFOVUpper": 0,
+                  "VerticalFOVLower": 0,
+                  "HorizontalFOVStart": 60,
+                  "HorizontalFOVEnd": 120,
+                  "DrawDebugPoints": true,
+                  "DataFrame": "VehicleInertialFrame"
+                }
+            },
+            "Cameras": {
+              "front": {
+                "CaptureSettings": [
+                  {
+                    "ImageType": 0,
+                    "Width": 700,
+                    "Height": 400,
+                    "FOV_Degrees": 90
+                  }
+                ],
+                "X": 0, "Y": 0, "Z": -1,
+                "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0
+              }
+            },
+            "Parameters": {
+              "NAV_RCL_ACT": 0,
+              "NAV_DLL_ACT": 0,
+              "COM_OBL_ACT": 1,
+              "LPE_LAT": 40.544289,
+              "LPE_LON": -4.012101
+            }
+        }
+    }
+  }

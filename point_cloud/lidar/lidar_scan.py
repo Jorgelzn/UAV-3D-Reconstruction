@@ -2,6 +2,9 @@ import airsim
 import os
 import getpass
 import ctypes
+from PIL import Image
+import numpy as np
+from skimage.transform import resize
 
 def convert(filename):
     print ("the input file name is:%r." %filename)
@@ -52,6 +55,10 @@ class Lidar:
         existing_data_cleared = False   #change to true to superimpose new scans onto existing .asc files
         try:
             while True:
+                responses = self.client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
+                photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
+                img = photo.reshape(responses[0].height, responses[0].width, 3)
+                #print(img.shape)
                 for lidar_name in lidar_names:
                     filename = f"{vehicle_name}_{lidar_name}_pointcloud.asc"
                     if not existing_data_cleared:
@@ -59,10 +66,13 @@ class Lidar:
                     else:
                         f = open(filename,'a')
                     lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name)
-
+                    print("points obtained: ",len(lidar_data.point_cloud)/3)
                     for i in range(0, len(lidar_data.point_cloud), 3):
                         xyz = lidar_data.point_cloud[i:i+3]
-                        r, g, b = (0, 0, 250)
+                        r = img[i-1][350][0]
+                        g = img[i-1][350][1]
+                        b = img[i-1][350][2]
+                        #print(r,g,b)
                         rgb = int('%02x%02x%02x' % (r, g, b), 16)
                         f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
                     f.close()
