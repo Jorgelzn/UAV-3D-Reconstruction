@@ -4,7 +4,7 @@ import getpass
 import ctypes
 from PIL import Image
 import numpy as np
-from skimage.transform import resize
+from matplotlib import pyplot as plt
 
 def convert(filename):
     print ("the input file name is:%r." %filename)
@@ -66,15 +66,19 @@ class Lidar:
                     else:
                         f = open(filename,'a')
                     lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name)
-                    print("points obtained: ",len(lidar_data.point_cloud)/3)
-                    for i in range(0, len(lidar_data.point_cloud), 3):
-                        xyz = lidar_data.point_cloud[i:i+3]
-                        r = img[i-1][350][0]
-                        g = img[i-1][350][1]
-                        b = img[i-1][350][2]
-                        #print(r,g,b)
-                        rgb = int('%02x%02x%02x' % (r, g, b), 16)
-                        f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
+                    points = len(lidar_data.point_cloud)/3
+                    print("points obtained: ",points)
+                    if points <= 400:
+                        for i in range(0, len(lidar_data.point_cloud), 3):
+                            xyz = lidar_data.point_cloud[i:i+3]
+                            pixel = int(i/3)
+                            print("pixel:",pixel)
+                            r = img[pixel][350][0]
+                            g = img[pixel][350][1]
+                            b = img[pixel][350][2]
+                            print(r,g,b)
+                            rgb = int('%02x%02x%02x' % (r, g, b), 16)
+                            f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
                     f.close()
                 existing_data_cleared = True
         except KeyboardInterrupt:
