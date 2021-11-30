@@ -69,17 +69,20 @@ class Lidar:
                     lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name)
                     points = len(lidar_data.point_cloud)/3
                     print("points obtained: ",points)
-                    if points <= 400:
-                        for i in range(0, len(lidar_data.point_cloud), 3):
+                    for i in range(0, len(lidar_data.point_cloud), 3):
+                        pixel = int(i/3)
+                        if pixel < 400:
                             xyz = lidar_data.point_cloud[i:i+3]
-                            pixel = int(i/3)
                             print("pixel:",pixel)
                             r = img[399-pixel][350][0]
                             g = img[399-pixel][350][1]
                             b = img[399-pixel][350][2]
-                            print(r,g,b)
+                            #print(r,g,b)
                             rgb = int('%02x%02x%02x' % (r, g, b), 16)
                             f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
+                        else:
+                            break
+                            
                     f.close()
                 existing_data_cleared = True
         except KeyboardInterrupt:
