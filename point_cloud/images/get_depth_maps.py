@@ -40,7 +40,7 @@ for img in imgs:
     output = cv2.resize(output, (imgWidth, imgHeight))
 
     # normalize output
-    output = cv2.normalize(output, None, 0,255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    #output = cv2.normalize(output, None, 0,255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     cv2.imwrite(depth_path+"/depth_img_"+str(number)+".png", output)
     number+=1
 

@@ -23,7 +23,7 @@ def convert(filename):
     output_filename = f"{prefix}.pcd"
     output = open("C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+output_filename,"w+")
 
-    list = ['# .PCD v.7 - Point Cloud Data file format\n','VERSION .7\n','FIELDS x y z rgb\n','SIZE 4 4 4 4\n','TYPE F F F U\n','COUNT 1 1 1 1\n']
+    list = ['# .PCD v.7 - Point Cloud Data file format\n','VERSION .7\n','FIELDS x y z\n','SIZE 4 4 4\n','TYPE F F F\n','COUNT 1 1 1\n']
 
     output.writelines(list)
     output.write ('WIDTH ') # Note that there are spaces behind it
@@ -55,11 +55,6 @@ class Lidar:
         existing_data_cleared = False   #change to true to superimpose new scans onto existing .asc files
         try:
             while True:
-                responses = self.client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
-                photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
-                img = photo.reshape(responses[0].height, responses[0].width, 3)
-                img = img[...,::-1]   #brg to rgb
-                #print(img.shape)
                 for lidar_name in lidar_names:
                     filename = f"{vehicle_name}_{lidar_name}_pointcloud.asc"
                     if not existing_data_cleared:
@@ -67,21 +62,10 @@ class Lidar:
                     else:
                         f = open(filename,'a')
                     lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name)
-                    points = len(lidar_data.point_cloud)/3
-                    print("points obtained: ",points)
+
                     for i in range(0, len(lidar_data.point_cloud), 3):
-                        pixel = int(i/3)
-                        if pixel < 400:
-                            xyz = lidar_data.point_cloud[i:i+3]
-                            print("pixel:",pixel)
-                            r = img[399-pixel][350][0]
-                            g = img[399-pixel][350][1]
-                            b = img[399-pixel][350][2]
-                            #print(r,g,b)
-                            rgb = int('%02x%02x%02x' % (r, g, b), 16)
-                            f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
-                        else:
-                            break
+                        xyz = lidar_data.point_cloud[i:i+3]
+                        f.write("%f %f %f\n" % (xyz[0],xyz[1],xyz[2]))
                             
                     f.close()
                 existing_data_cleared = True

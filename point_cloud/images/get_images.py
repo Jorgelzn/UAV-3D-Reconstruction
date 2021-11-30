@@ -70,7 +70,7 @@ def record(client,fps):
 def start_record(key):
     try:
         if key.char =='r':
-            fps = 2
+            fps = 5
             print("Starting record at",1/fps,"FPS")
             record(client,fps)
         if key.char =='e':

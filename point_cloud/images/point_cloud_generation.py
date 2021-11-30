@@ -47,10 +47,10 @@ for i in range(len(color_images)):
     #create point cloud
     color_raw = o3d.io.read_image(record_path+"/color_images/"+color_images[i])
     depth_raw = o3d.io.read_image(record_path+"/depth_images/"+depth_images[i])
-
-    rgbd_img = o3d.geometry.RGBDImage.create_from_color_and_depth(color_raw,depth_raw,depth_scale=1.0, depth_trunc=1000, convert_rgb_to_intensity=False)
-
-    pcd += o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_img,intrinsic, extrinsic=F)
+    
+    rgbd_img = o3d.geometry.RGBDImage.create_from_color_and_depth(color_raw,depth_raw,depth_scale=0.5, depth_trunc=1000, convert_rgb_to_intensity=False)
+    pointcloud = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_img,intrinsic, extrinsic=F)
+    pcd += pointcloud
 
 
 o3d.io.write_point_cloud("pointscloud.pcd", pcd)

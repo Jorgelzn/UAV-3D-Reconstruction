@@ -13,5 +13,5 @@ def read(file):
 if __name__ == "__main__":
     sensor = 1
     file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+"Drone1_LidarSensor"+str(sensor)+"_pointcloud.pcd"
-    file2 = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/test.pcd"
-    read(file)
+    file2 = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+"Drone1_LidarSensor"+str(sensor)+"_pointcloud_rgb.pcd"
+    read(file2)
