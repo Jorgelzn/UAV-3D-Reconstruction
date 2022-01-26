@@ -3,7 +3,6 @@ import airsim
 import numpy as np
 import time
 import keyboard  
-from pynput.keyboard import Listener
 
 
 #create directories for record
@@ -14,7 +13,7 @@ def create_folders():
     while exists:
         try:
             # Create target Directory
-            directory ="records/record_"+str(number)
+            directory =os.path.dirname(__file__)+"/records/record_"+str(number)
             os.mkdir(directory)
             exists=False
         except FileExistsError:
@@ -49,11 +48,10 @@ def take_photo(client,record_path,img_number,file):
 def record(client,fps):
     directory = create_folders()
     file = open(directory+"/positions.txt", "w")
-    rec = True
     frame = time.time()
     img_number=0
-    while rec:
-
+    print("Started Recording")
+    while True:
         clock = time.time()
         if clock-frame>fps:
             take_photo(client,directory+"/color_images",img_number,file)
@@ -61,34 +59,20 @@ def record(client,fps):
             frame =clock
 
         if keyboard.is_pressed('s'):
-            print("Stoping record")
-            rec = False
+            print("Stoped recording")
+            break
 
     file.close()
-
-
-def start_record(key):
-    try:
-        if key.char =='r':
-            fps = 5
-            print("Starting record at",1/fps,"FPS")
-            record(client,fps)
-        if key.char =='e':
-            return False
-    except:
-        pass
 
 
 if __name__=="__main__":
 
     client = airsim.VehicleClient()
     client.confirmConnection()
+    record(client,1)
 
-    print("press R to start recording")
-    print("Press S to stop recording")
-    print("press e to exit")
-    with Listener(on_release = start_record) as listener:
-        listener.join()
+
+
 
 
 

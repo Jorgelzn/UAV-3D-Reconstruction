@@ -1,0 +1,7 @@
+ejecutar python orchestateModifyIPs.py
+
+abrir wsl ubuntu
+
+entrar en PX4_autopilot
+
+ejecutar make px4_sitl_default none_iris
