@@ -59,7 +59,7 @@ class Lidar:
                 photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
                 img = photo.reshape(responses[0].height, responses[0].width, 3)
                 img = img[...,::-1]   #brg to rgb
-                img=np.flipud(img)     #flip img
+                #img=np.flipud(img)     #flip img
                 #imgplot = plt.imshow(img)
                 #plt.show()
                 for lidar_name in lidar_names:

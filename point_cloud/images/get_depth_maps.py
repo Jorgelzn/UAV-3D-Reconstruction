@@ -14,7 +14,7 @@ if (model.empty()):
 model.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
 model.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-record_number = 1
+record_number = 5
 record_path = os.path.dirname(__file__)+"/records/record_"+str(record_number)
 color_path =  record_path+"/color_images"
 depth_path = record_path+"/depth_images"
