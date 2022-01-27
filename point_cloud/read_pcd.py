@@ -17,17 +17,11 @@ if __name__ == "__main__":
     sensor = 1
     file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+"Drone1_LidarSensor"+str(sensor)+"_pointcloud.pcd"
     file2 = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/"+"Drone1_LidarSensor"+str(sensor)+"_pointcloud_rgb.pcd"
-    pcd = read(file)
+    pcd = read(file2)
     #plane_model, inliers = pcd.segment_plane(distance_threshold=0.01, ransac_n=3, num_iterations=1000)
     #inlier_cloud = pcd.select_by_index(inliers)
     #outlier_cloud = pcd.select_by_index(inliers, invert=True)
     #inlier_cloud.paint_uniform_color([1, 0, 0])
     #outlier_cloud.paint_uniform_color([0.6, 0.6, 0.6])
     #o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
-    o3d.visualization.draw_geometries([pcd])
-    alpha = 0.01
-    print(f"alpha={alpha:.3f}")
-    mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
-    mesh.compute_vertex_normals()
-    o3d.visualization.draw_geometries([mesh], mesh_show_back_face=True)
 
