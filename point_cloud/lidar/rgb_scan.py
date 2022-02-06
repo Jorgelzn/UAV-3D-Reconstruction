@@ -1,10 +1,23 @@
+
 import airsim
 import os
 import getpass
-import ctypes
-from PIL import Image
 import numpy as np
-from matplotlib import pyplot as plt
+import json
+import open3d as o3d
+import numpy as np
+import cv2 as cv
+
+def worldpoint_to_pixel(world_points, camera_intrinsics, camera_rotation,camera_translation):
+
+    pixel = []
+    projection = cv.projectPoints(np.array(world_points),rvec=cv.Rodrigues(np.array(camera_rotation))[0],tvec=np.array(camera_translation),cameraMatrix=camera_intrinsics.intrinsic_matrix,distCoeffs=np.array([]))
+
+    pixel.append(int(projection[0][0][0][1]))
+    pixel.append(int(projection[0][0][0][0]))
+    print(pixel)
+    return pixel
+
 
 def convert(filename):
     print ("the input file name is:%r." %filename)
@@ -54,48 +67,50 @@ class Lidar:
         print('Scanning Has Started\n')
         existing_data_cleared = False   #change to true to superimpose new scans onto existing .asc files
 
-        #CAMERA CONSTANTS
 
-        img_width = 672
-        center_x = img_width/2
-        img_height = 376
-        center_y = img_height/2
-        img_fov = 90
-        ratio = img_width/img_height
+        # Get the default directory for AirSim
+        airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
 
-        epsilon = .001
+        # Load the settings file
+        with open(os.path.join(airsim_path, 'settings.json'), 'r') as fp:
+            data = json.load(fp)
 
-        s_x = ( img_width - epsilon ) / 2
-        d_x = ( img_width - epsilon ) / 2
-
-        s_y = ( img_height - epsilon ) / (-2*ratio)
-        d_y = ( img_height - epsilon ) / 2
-
-
+        # Get the camera intrinsics
+        capture_settings = data['CameraDefaults']['CaptureSettings'][0]
+        img_width = capture_settings['Width']
+        img_height = capture_settings['Height']
+        img_fov = capture_settings['FOV_Degrees']
 
         # Compute the focal length
         fov_rad = img_fov * np.pi/180
-        focal = np.tan(fov_rad/2.0)
+        fd = (img_width/2.0) / np.tan(fov_rad/2.0)
+        #fd = 2 * np.arctan(img_width/2*fov_rad)
+
+        # Create the camera intrinsic object
+        intrinsic = o3d.camera.PinholeCameraIntrinsic()
+        intrinsic.set_intrinsics(img_width, img_height, fd, fd, img_width/2-0.5, img_height/2-0.5)
         
         try:
             while True:
+
+                #GET IMAGE
+
                 responses = self.client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
 
-                #CAMERA VALUES
-                camera_x = responses[0].camera_position.x_val
-                camera_y = responses[0].camera_position.y_val
-                camera_z = responses[0].camera_position.z_val
-                camera_orientation_w = responses[0].camera_orientation.w_val
-                camera_orientation_x = responses[0].camera_orientation.x_val
-                camera_orientation_y = responses[0].camera_orientation.y_val
-                camera_orientation_z = responses[0].camera_orientation.z_val
+                #CAMERA EXTRINSICS
+
+                qw, qy, qz, qx = responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val, responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val
+                camera_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qy, qz, qx))
+                camera_translation =  [responses[0].camera_position.x_val,responses[0].camera_position.y_val,responses[0].camera_position.z_val]
 
                 #IMAGE
 
                 photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
+                
                 img = photo.reshape(responses[0].height, responses[0].width, 3)
                 img = img[...,::-1]   #brg to rgb
-
+                #img = cv.rotate(img, cv.ROTATE_180)
+                #LIDAR
 
                 for lidar_name in lidar_names:
                     filename = f"{vehicle_name}_{lidar_name}_pointcloud_rgb.asc"
@@ -104,28 +119,39 @@ class Lidar:
                     else:
                         f = open(filename,'a')
 
-                    lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name)
-                    points = len(lidar_data.point_cloud)/3
-                    cloud = len(lidar_data.point_cloud)
+                    lidar_data = self.client.getLidarData(lidar_name=lidar_name,vehicle_name=vehicle_name,)
+
+                    #LIDAR EXTRINSICS
+                    qw, qy, qz, qx = lidar_data.pose.orientation.w_val, lidar_data.pose.orientation.x_val, lidar_data.pose.orientation.y_val, lidar_data.pose.orientation.z_val
+                    lidar_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qy, qz, qx))
+                    lidar_translation =  [lidar_data.pose.position.x_val,lidar_data.pose.position.y_val,lidar_data.pose.position.z_val]
+
                     
-                    for i in range(0, cloud, 3):
+                    for i in reversed(range(0, len(lidar_data.point_cloud), 3)):
+
                         xyz = lidar_data.point_cloud[i:i+3]
-
+                        
+                        # transformation from lidar pose to world
+                        
+                        xyz = lidar_rotation.dot(xyz)+lidar_translation
+                    
                         #PROYECCION
-                        X_NDC = xyz[0]/(ratio*xyz[2]*focal)
-                        Y_NDC = xyz[1]/(xyz[2]*focal)
-                        pixel_x = int(s_x * X_NDC + d_x)
-                        pixel_y = int(s_y * Y_NDC + d_y)
-                        r,g,b = [color for color in img[pixel_y,pixel_x]]
 
-                        rgb = int('%02x%02x%02x' % (r,g,b), 16)
-                        f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
-
+                        pixel = worldpoint_to_pixel(xyz,intrinsic,camera_rotation,camera_translation)
+                        if len(img) > pixel[1] > 0 and len(img[0]) > pixel[0] > 0:
+                            r,g,b = [color for color in img[pixel[1]][pixel[0]]]
+                            #print("point:",xyz,"\nColor:",r,g,b)
+                            #img[pixel[1]][pixel[0]][:]=[0,255,0]
+                            rgb = int('%02x%02x%02x' % (r,g,b), 16)
+                            f.write("%f %f %f %f\n" % (xyz[0],xyz[1],xyz[2],rgb))
+                    print("camara:",responses[0].camera_position)
                     f.close()
+                    return img
                 existing_data_cleared = True
         except KeyboardInterrupt:
             airsim.wait_key('Press any key to stop running this script')
             print("Done!\n")
+            return img
 
 # main
 if __name__ == "__main__":
@@ -133,8 +159,10 @@ if __name__ == "__main__":
     vehicle = 'Drone1'
     lidar_sensors = ['LidarSensor1']
 
-    lidar.execute(vehicle,lidar_sensors)
-
+    data = lidar.execute(vehicle,lidar_sensors)
+    from matplotlib import pyplot as plt
+    plt.imshow(data, interpolation='nearest')
+    plt.show()
     for lidar_name in lidar_sensors:
         convert(f"{vehicle}_{lidar_name}_pointcloud_rgb.asc")
         os.remove(f"{vehicle}_{lidar_name}_pointcloud_rgb.asc")
