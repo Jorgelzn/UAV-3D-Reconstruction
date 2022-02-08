@@ -1,4 +1,5 @@
 
+from cmath import pi
 import airsim
 import os
 import getpass
@@ -36,12 +37,13 @@ class Lidar:
 
         # Compute the focal length
         fov_rad = img_fov * np.pi/180
-        fd = (img_width/2.0) / np.tan(fov_rad/2.0)
+        fdx = (img_width/2.0) / np.tan(fov_rad/2.0)
+        fdy = (img_height/2.0) / np.tan(fov_rad/2.0)
         #fd = 2 * np.arctan(img_width/2*fov_rad)
 
         # Create the camera intrinsic object
         camera_intrinsics = o3d.camera.PinholeCameraIntrinsic()
-        camera_intrinsics.set_intrinsics(img_width, img_height, fd, fd, img_width/2, img_height/2)
+        camera_intrinsics.set_intrinsics(img_width, img_height, fdx, fdy, img_width/2, img_height/2)
         
         #pointcloud
         pcd = o3d.geometry.PointCloud()
@@ -65,17 +67,22 @@ class Lidar:
                 img = img[...,::-1]   #brg to rgb
                 #img = cv.rotate(img, cv.ROTATE_180)
 
-                #CAMERA EXTRINSICS
-
-                qw, qy, qz, qx = responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val, responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val
-                camera_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qy, qz, qx))
-                camera_translation =  [responses[0].camera_position.x_val,responses[0].camera_position.y_val,responses[0].camera_position.z_val]
 
                 #LIDAR EXTRINSICS
-                qw, qy, qz, qx = lidar_data.pose.orientation.w_val, lidar_data.pose.orientation.x_val, lidar_data.pose.orientation.y_val, lidar_data.pose.orientation.z_val
-                lidar_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qy, qz, qx))
+                qw, qx, qy, qz = lidar_data.pose.orientation.w_val, lidar_data.pose.orientation.x_val, lidar_data.pose.orientation.y_val, lidar_data.pose.orientation.z_val
+                lidar_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qx, qy, qz))
                 lidar_translation =  [lidar_data.pose.position.x_val,lidar_data.pose.position.y_val,lidar_data.pose.position.z_val]
 
+                #CAMERA EXTRINSICS
+
+                qw, qx, qy, qz = responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val, responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val
+                camera_rotation = o3d.geometry.get_rotation_matrix_from_quaternion((qw, qx, qy, qz))
+                camera_translation =  [responses[0].camera_position.x_val,responses[0].camera_position.y_val,responses[0].camera_position.z_val]
+
+                point = o3d.geometry.PointCloud()
+                point.points = o3d.utility.Vector3dVector(np.reshape(np.array(camera_translation),(1,3)))
+                point.colors =  o3d.utility.Vector3dVector(np.reshape(np.array([0,200,150]),(1,3)))
+                pcd+=point
                     
                 for i in range(0, len(lidar_data.point_cloud), 3):
 
@@ -86,25 +93,31 @@ class Lidar:
                     xyz = lidar_rotation.dot(xyz)+lidar_translation
 
                     #PROYECCION
-                        
+
                     projection = cv.projectPoints(np.array(xyz),rvec=cv.Rodrigues(np.array(camera_rotation))[0],tvec=np.array(camera_translation),cameraMatrix=camera_intrinsics.intrinsic_matrix,distCoeffs=np.array([]))
                     pixel = [int(projection[0][0][0][0]),int(projection[0][0][0][1])]
-                    
-                    if len(img) > pixel[1] > 0 and len(img[0]) > pixel[0] > 0:
+                    print(projection)
+                    #projection = np.linalg.inv(camera_rotation).dot(xyz)+camera_translation
+                    #x_coordinate = projection[1]/(-projection[2])
+                    #y_coordinate = projection[0]/(-projection[2])
 
-                        img[pixel[1]][pixel[0]][:]=[0,255,0]
-                        print(np.array(img[pixel[1]][pixel[0]]))
+                    #pixel_x = -(camera_intrinsics.get_focal_length()[0]* x_coordinate)/(camera_intrinsics.width*0.045) + camera_intrinsics.get_principal_point()[0]
+                    #pixel_y = -(camera_intrinsics.get_focal_length()[1]* y_coordinate)/(camera_intrinsics.height*0.035) + camera_intrinsics.get_principal_point()[1]
+                    #pixel = [int(pixel_y),int(pixel_x)]
+                    
+                    if  len(img) > pixel[0] > 0 and len(img[0]) > pixel[1] > 0:
+
+                        #img[pixel[1]][pixel[0]][:]=[0,255,0]
                         point = o3d.geometry.PointCloud()
                         point.points = o3d.utility.Vector3dVector(np.reshape(np.array(xyz),(1,3)))
-                        point.colors =  o3d.utility.Vector3dVector(np.reshape(np.array(img[pixel[1]][pixel[0]]),(1,3)))
+                        point.colors =  o3d.utility.Vector3dVector(np.reshape(np.array(img[pixel[0]][pixel[1]]/255),(1,3)))
                         pcd+=point
+                    else:
+                        print(pixel)
 
         except KeyboardInterrupt:
             airsim.wait_key('Press any key to stop running this script')
             print("Done!\n")
-            print("camara:",responses[0].camera_position)
-            plt.imshow(img, interpolation='nearest')
-            plt.show()
             output = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/lidar_rgb_scan.pcd"
             o3d.io.write_point_cloud(output, pcd)
             o3d.visualization.draw_geometries([pcd])
