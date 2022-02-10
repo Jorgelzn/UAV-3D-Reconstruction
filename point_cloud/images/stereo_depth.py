@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import cv2 as cv
 
 
-record_number = 3
+record_number = 4
 record_path = os.path.dirname(__file__)+"/records/record_"+str(record_number)
 color_path =  record_path+"/stereo_color_images"
 depth_path = record_path+"/stereo_depth"
