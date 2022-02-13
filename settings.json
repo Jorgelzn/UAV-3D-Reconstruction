@@ -1,0 +1,93 @@
+{
+  "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/master/docs/settings_json.md",
+  "SettingsVersion": 1.2,
+
+  "SimMode": "Multirotor",
+  "ClockType": "SteppableClock",
+  "SubWindows": [
+    {"WindowID": 0, "ImageType": 0, "CameraName": "front-left", "Visible": true},
+    {"WindowID": 1, "ImageType": 0, "CameraName": "front", "Visible": true},
+    {"WindowID": 2, "ImageType": 0, "CameraName": "front-right", "Visible": true}
+  ],
+  "OriginGeopoint": {
+    "Latitude": 40.544289,
+    "Longitude": -4.012101,
+    "Altitude": 122
+  },
+  "CameraDefaults":{
+    "CaptureSettings": [
+      {
+        "ImageType": 0,
+        "Width": 540,
+        "Height": 540,
+        "FOV_Degrees": 90,
+        "OrthoWidth": 5.12
+      }
+    ]
+  },
+  "Vehicles": {
+      "Drone1": {
+        "VehicleType": "PX4Multirotor",
+        "UseSerial": false,
+        "LockStep": true,
+        "UseTcp": true,
+        "TcpPort": 4560,
+        "ControlIp": "remote",
+        "ControlPortLocal": 14541,
+        "ControlPortRemote": 14581,
+                         "LocalHostIp": "172.18.240.1",
+        "QgcHostIp": "127.0.0.1",
+        "QgcPort": 14550,
+          "Sensors": {
+              "LidarSensor1": { 
+                "SensorType": 6,
+                "Enabled" : true,
+                "NumberOfChannels": 1,
+                "RotationsPerSecond": 10,
+                "Range":15,
+                "PointsPerSecond": 10000,
+                "X": 0, "Y": 0, "Z": 0,
+                "Roll": 90, "Pitch": 0, "Yaw" : 0,
+                "VerticalFOVUpper": 0,
+                "VerticalFOVLower": 0,
+                "HorizontalFOVStart": 0,
+                "HorizontalFOVEnd": 180,
+                "DrawDebugPoints":false,
+                "DataFrame": "SensorLocalFrame"
+              }
+          },
+          "Cameras": {
+            "front": {
+              "X": 0, "Y": 0, "Z": 0.15,
+              "Pitch": -24.0, "Roll": 0.0, "Yaw": 0.0,
+              "CaptureSettings": [
+                {
+                  "ImageType": 0,
+                  "Width": 540,
+                  "Height": 540,
+                  "FOV_Degrees": 90,
+                  "OrthoWidth": 5.12
+                }
+              ]
+            },
+            "front-left": {
+              "X": 0.50, "Y": -0.08, "Z": 0.10,
+              "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0
+            },
+            "front-right": {
+              "X": 0.50, "Y": 0.08, "Z": 0.10,
+              "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0
+            }
+          },
+          "X": 0, "Y": 0, "Z": 0,
+          "Pitch": 0, "Roll": 0, "Yaw": 0,
+          "Parameters": {
+            "NAV_RCL_ACT": 0,
+            "NAV_DLL_ACT": 0,
+            "COM_OBL_ACT": 1,
+            "LPE_LAT": 40.544289,
+            "LPE_LON": -4.012101
+          }
+      }
+  }
+}

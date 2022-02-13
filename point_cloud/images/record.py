@@ -81,7 +81,7 @@ if __name__=="__main__":
 
     client = airsim.VehicleClient()
     client.confirmConnection()
-    record(client,5)
+    record(client,0.2)
 
 
 
