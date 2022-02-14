@@ -102,7 +102,7 @@ class Lidar:
                         #coordinates = -camera_intrinsics.intrinsic_matrix.dot(projection)
                         coordinates = [-fdx*projection[0]/projection[2],-fdy*projection[1]/projection[2]]
                         print("coordinates:",coordinates)
-                        pixel = [abs(int(coordinates[0]+camera_intrinsics.width/2)),abs(int(camera_intrinsics.height/2-coordinates[1]))]
+                        pixel = [int(coordinates[0]+camera_intrinsics.width/2),int(camera_intrinsics.height/2-coordinates[1])]
                         #print("pixel",pixel)
                         if  len(img[0])> pixel[0] > 0 and len(img)> pixel[1] > 0:
                             #img[pixel[1]][pixel[0]][:]=[0,255,0]
