@@ -30,7 +30,7 @@ REM --------------------------------------------------
 REM updateIP
 REM --------------------------------------------------
 :updateIP
-start C:\Users\%USERNAME%\anaconda3\python.exe C:\Users\%USERNAME%\Desktop\Workspace\AirSim\run\orchestateModifyIPs.py
+start C:\Users\jorge\AppData\Local\Programs\Python\Python38\python.exe C:\Users\%USERNAME%\Desktop\Workspace\AirSim\run\orchestateModifyIPs.py
 ECHO --- Actualizadas direcciones IP
 goto second
 

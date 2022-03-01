@@ -8,7 +8,7 @@ from mavsdk.mission import (MissionItem, MissionPlan)
 
 async def run():
     drone = System()
-    await drone.connect(system_address="udp://:14550")
+    await drone.connect(system_address="udp://:14551")
 
     print("Waiting for drone to connect...")
     async for state in drone.core.connection_state():
@@ -31,6 +31,7 @@ async def run():
                                      float('nan'),
                                      float('nan'),
                                      MissionItem.CameraAction.NONE,
+                                     float('nan'),
                                      float('nan'),
                                      float('nan'),
                                      float('nan'),

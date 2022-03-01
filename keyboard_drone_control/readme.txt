@@ -9,3 +9,6 @@ Commands:
     move (x y z vel)
     moveOnPath (x1 y1 z1 ... xn yn zn vel)
 
+
+necesario tener la simulacion en modo multirotor, no en PX4Multirotor
+

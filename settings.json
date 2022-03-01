@@ -31,11 +31,11 @@
         "UseSerial": false,
         "LockStep": true,
         "UseTcp": true,
-        "TcpPort": 4560,
+        "TcpPort": 4561,
         "ControlIp": "remote",
         "ControlPortLocal": 14541,
         "ControlPortRemote": 14581,
-                         "LocalHostIp": "172.18.240.1",
+                                              "LocalHostIp": "172.31.0.1",
         "QgcHostIp": "127.0.0.1",
         "QgcPort": 14550,
           "Sensors": {
