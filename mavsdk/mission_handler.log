@@ -267,3 +267,192 @@ ERROR: Unable to configure handler 'log_file'
 | INFO   2022-03-01 13:47:45,282| Drone0     | -- Setting second setpoint 1
 | INFO   2022-03-01 13:47:50,288| Drone0     | END initialize
 | INFO   2022-03-01 13:47:50,289| Drone0     | START mission
+| INFO   2022-03-01 13:55:27,732| MissionHandler| Run executed
+| INFO   2022-03-01 13:55:27,733| MissionHandler| AAAA
+| INFO   2022-03-01 13:55:27,734| MissionHandler| Starting mission handler
+| INFO   2022-03-01 13:55:27,734| MissionHandler| Creating control primitives
+| INFO   2022-03-01 13:55:27,735| MissionHandler| Creating each drone mission
+| INFO   2022-03-01 13:55:27,738| MissionHandler| Logger initialized
+| INFO   2022-03-01 13:55:27,738| MissionHandler| Starting missions: 
+| INFO   2022-03-01 13:55:27,739| Drone0     | Run executed
+| INFO   2022-03-01 13:55:27,740| Drone0     | START initialize
+| INFO   2022-03-01 13:55:27,741| Drone0     | Init AirSim client
+| INFO   2022-03-01 13:55:27,745| Drone0     | START mission 2
+| INFO   2022-03-01 13:55:27,745| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-01 13:55:27,752| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-01 13:55:27,752| Thread-3   | [34m[01:55:27|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-01 13:55:27,755| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-01 13:55:27,758| Drone0     | -- Arming 1
+| INFO   2022-03-01 13:55:27,776| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-01 13:55:27,777| Drone0     | -- Starting offboard 1
+| INFO   2022-03-01 13:55:27,797| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-01 13:55:32,803| Drone0     | END initialize
+| INFO   2022-03-01 13:55:32,804| Drone0     | START mission
+| INFO   2022-03-01 20:39:57,050| MissionHandler| Run executed
+| INFO   2022-03-01 20:39:57,052| MissionHandler| AAAA
+| INFO   2022-03-01 20:39:57,052| MissionHandler| Starting mission handler
+| INFO   2022-03-01 20:39:57,053| MissionHandler| Creating control primitives
+| INFO   2022-03-01 20:39:57,053| MissionHandler| Creating each drone mission
+| INFO   2022-03-01 20:39:57,057| MissionHandler| Logger initialized
+| INFO   2022-03-01 20:39:57,058| MissionHandler| Starting missions: 
+| INFO   2022-03-01 20:39:57,058| Drone0     | Run executed
+| INFO   2022-03-01 20:39:57,059| Drone0     | START initialize
+| INFO   2022-03-01 20:39:57,060| Drone0     | Init AirSim client
+| INFO   2022-03-01 20:39:57,065| Drone0     | START mission 2
+| INFO   2022-03-01 20:39:57,066| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-01 20:39:57,071| Thread-3   | [34m[08:39:57|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-01 20:39:57,090| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-01 20:39:57,096| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-01 20:39:57,098| Drone0     | -- Arming 1
+| INFO   2022-03-01 20:39:57,119| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-01 20:39:57,121| Drone0     | -- Starting offboard 1
+| INFO   2022-03-01 20:39:57,137| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-01 20:40:02,143| Drone0     | END initialize
+| INFO   2022-03-01 20:40:02,144| Drone0     | START mission
+| INFO   2022-03-01 21:11:56,265| MissionHandler| Run executed
+| INFO   2022-03-01 21:11:56,266| MissionHandler| AAAA
+| INFO   2022-03-01 21:11:56,266| MissionHandler| Starting mission handler
+| INFO   2022-03-01 21:11:56,267| MissionHandler| Creating control primitives
+| INFO   2022-03-01 21:11:56,267| MissionHandler| Creating each drone mission
+| INFO   2022-03-01 21:11:56,271| MissionHandler| Logger initialized
+| INFO   2022-03-01 21:11:56,272| MissionHandler| Starting missions: 
+| INFO   2022-03-01 21:11:56,272| Drone0     | Run executed
+| INFO   2022-03-01 21:11:56,273| Drone0     | START initialize
+| INFO   2022-03-01 21:11:56,274| Drone0     | Init AirSim client
+| INFO   2022-03-01 21:11:56,279| Drone0     | START mission 2
+| INFO   2022-03-01 21:11:56,279| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-01 21:11:56,286| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-01 21:11:56,287| Thread-3   | [34m[09:11:56|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-01 21:11:56,289| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-01 21:11:56,292| Drone0     | -- Arming 1
+| INFO   2022-03-01 21:11:56,313| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-01 21:11:56,314| Drone0     | -- Starting offboard 1
+| INFO   2022-03-01 21:11:56,322| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-01 21:12:01,328| Drone0     | END initialize
+| INFO   2022-03-01 21:12:01,329| Drone0     | START mission
+| INFO   2022-03-01 21:23:05,792| MissionHandler| Run executed
+| INFO   2022-03-01 21:23:05,793| MissionHandler| AAAA
+| INFO   2022-03-01 21:23:05,793| MissionHandler| Starting mission handler
+| INFO   2022-03-01 21:23:05,793| MissionHandler| Creating control primitives
+| INFO   2022-03-01 21:23:05,794| MissionHandler| Creating each drone mission
+| INFO   2022-03-01 21:23:05,796| MissionHandler| Logger initialized
+| INFO   2022-03-01 21:23:05,796| MissionHandler| Starting missions: 
+| INFO   2022-03-01 21:23:05,797| Drone0     | Run executed
+| INFO   2022-03-01 21:23:05,797| Drone0     | START initialize
+| INFO   2022-03-01 21:23:05,798| Drone0     | Init AirSim client
+| INFO   2022-03-01 21:23:05,801| Drone0     | START mission 2
+| INFO   2022-03-01 21:23:05,801| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-01 21:23:05,807| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-01 21:23:05,807| Thread-3   | [34m[09:23:05|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-01 21:23:05,809| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-01 21:23:05,811| Drone0     | -- Arming 1
+| INFO   2022-03-01 21:23:05,835| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-01 21:23:05,836| Drone0     | -- Starting offboard 1
+| INFO   2022-03-01 21:23:05,847| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-01 21:23:10,853| Drone0     | END initialize
+| INFO   2022-03-01 21:23:10,854| Drone0     | START mission
+| INFO   2022-03-02 20:14:35,146| MissionHandler| Run executed
+| INFO   2022-03-02 20:14:35,147| MissionHandler| AAAA
+| INFO   2022-03-02 20:14:35,148| MissionHandler| Starting mission handler
+| INFO   2022-03-02 20:14:35,148| MissionHandler| Creating control primitives
+| INFO   2022-03-02 20:14:35,149| MissionHandler| Creating each drone mission
+| INFO   2022-03-02 20:14:35,151| MissionHandler| Logger initialized
+| INFO   2022-03-02 20:14:35,151| MissionHandler| Starting missions: 
+| INFO   2022-03-02 20:14:35,152| Drone0     | Run executed
+| INFO   2022-03-02 20:14:35,152| Drone0     | START initialize
+| INFO   2022-03-02 20:14:35,152| Drone0     | Init AirSim client
+| INFO   2022-03-02 20:14:35,157| Drone0     | START mission 2
+| INFO   2022-03-02 20:14:35,158| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-02 20:14:35,163| Thread-3   | [34m[08:14:35|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-02 20:14:35,181| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-02 20:14:35,186| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-02 20:14:35,188| Drone0     | -- Arming 1
+| INFO   2022-03-02 20:14:35,208| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-02 20:14:35,210| Drone0     | -- Starting offboard 1
+| INFO   2022-03-02 20:14:35,232| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-02 20:14:40,238| Drone0     | END initialize
+| INFO   2022-03-02 20:14:40,238| Drone0     | START mission
+| INFO   2022-03-02 20:44:15,717| MissionHandler| Run executed
+| INFO   2022-03-02 20:44:15,718| MissionHandler| AAAA
+| INFO   2022-03-02 20:44:15,718| MissionHandler| Starting mission handler
+| INFO   2022-03-02 20:44:15,719| MissionHandler| Creating control primitives
+| INFO   2022-03-02 20:44:15,719| MissionHandler| Creating each drone mission
+| INFO   2022-03-02 20:44:15,722| MissionHandler| Logger initialized
+| INFO   2022-03-02 20:44:15,722| MissionHandler| Starting missions: 
+| INFO   2022-03-02 20:44:15,722| Drone0     | Run executed
+| INFO   2022-03-02 20:44:15,723| Drone0     | START initialize
+| INFO   2022-03-02 20:44:15,724| Drone0     | Init AirSim client
+| INFO   2022-03-02 20:44:15,727| Drone0     | START mission 2
+| INFO   2022-03-02 20:44:15,727| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-02 20:44:15,732| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-02 20:44:15,732| Thread-3   | [34m[08:44:15|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-02 20:44:15,735| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-02 20:44:15,736| Drone0     | -- Arming 1
+| INFO   2022-03-02 20:44:15,755| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-02 20:44:15,756| Drone0     | -- Starting offboard 1
+| INFO   2022-03-02 20:44:15,764| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-02 20:44:20,770| Drone0     | END initialize
+| INFO   2022-03-02 20:44:20,771| Drone0     | START mission
+| INFO   2022-03-02 21:10:23,945| MissionHandler| Run executed
+| INFO   2022-03-02 21:10:23,946| MissionHandler| AAAA
+| INFO   2022-03-02 21:10:23,947| MissionHandler| Starting mission handler
+| INFO   2022-03-02 21:10:23,947| MissionHandler| Creating control primitives
+| INFO   2022-03-02 21:10:23,947| MissionHandler| Creating each drone mission
+| INFO   2022-03-02 21:10:23,950| MissionHandler| Logger initialized
+| INFO   2022-03-02 21:10:23,950| MissionHandler| Starting missions: 
+| INFO   2022-03-02 21:10:23,951| Drone0     | Run executed
+| INFO   2022-03-02 21:10:23,952| Drone0     | START initialize
+| INFO   2022-03-02 21:10:23,953| Drone0     | Init AirSim client
+| INFO   2022-03-02 21:10:23,958| Drone0     | START mission 2
+| INFO   2022-03-02 21:10:23,958| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-02 21:10:23,966| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-02 21:10:23,966| Thread-3   | [34m[09:10:23|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-02 21:10:23,969| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-02 21:10:23,971| Drone0     | -- Arming 1
+| INFO   2022-03-02 21:10:23,996| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-02 21:10:23,998| Drone0     | -- Starting offboard 1
+| INFO   2022-03-02 21:10:24,008| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-02 21:10:29,014| Drone0     | END initialize
+| INFO   2022-03-02 21:10:29,015| Drone0     | START mission
+| INFO   2022-03-02 21:13:21,259| MissionHandler| Run executed
+| INFO   2022-03-02 21:13:21,260| MissionHandler| AAAA
+| INFO   2022-03-02 21:13:21,260| MissionHandler| Starting mission handler
+| INFO   2022-03-02 21:13:21,261| MissionHandler| Creating control primitives
+| INFO   2022-03-02 21:13:21,261| MissionHandler| Creating each drone mission
+| INFO   2022-03-02 21:13:21,264| MissionHandler| Logger initialized
+| INFO   2022-03-02 21:13:21,264| MissionHandler| Starting missions: 
+| INFO   2022-03-02 21:13:21,264| Drone0     | Run executed
+| INFO   2022-03-02 21:13:21,265| Drone0     | START initialize
+| INFO   2022-03-02 21:13:21,267| Drone0     | Init AirSim client
+| INFO   2022-03-02 21:13:21,270| Drone0     | START mission 2
+| INFO   2022-03-02 21:13:21,271| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-02 21:13:21,276| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-02 21:13:21,276| Thread-3   | [34m[09:13:21|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-02 21:13:21,279| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-02 21:13:21,280| Drone0     | -- Arming 1
+| INFO   2022-03-02 21:13:21,303| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-02 21:13:21,304| Drone0     | -- Starting offboard 1
+| INFO   2022-03-02 21:13:21,315| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-02 21:13:26,322| Drone0     | END initialize
+| INFO   2022-03-02 21:13:26,323| Drone0     | START mission
+| INFO   2022-03-02 21:16:58,653| MissionHandler| Run executed
+| INFO   2022-03-02 21:16:58,655| MissionHandler| AAAA
+| INFO   2022-03-02 21:16:58,655| MissionHandler| Starting mission handler
+| INFO   2022-03-02 21:16:58,655| MissionHandler| Creating control primitives
+| INFO   2022-03-02 21:16:58,656| MissionHandler| Creating each drone mission
+| INFO   2022-03-02 21:16:58,658| MissionHandler| Logger initialized
+| INFO   2022-03-02 21:16:58,659| MissionHandler| Starting missions: 
+| INFO   2022-03-02 21:16:58,659| Drone0     | Run executed
+| INFO   2022-03-02 21:16:58,660| Drone0     | START initialize
+| INFO   2022-03-02 21:16:58,660| Drone0     | Init AirSim client
+| INFO   2022-03-02 21:16:58,663| Drone0     | START mission 2
+| INFO   2022-03-02 21:16:58,663| Drone0     | Drone1 connecting to port 14551...
+| DEBUG  2022-03-02 21:16:58,668| Drone0     | Waiting for mavsdk_server to be ready...
+| DEBUG  2022-03-02 21:16:58,669| Thread-3   | [34m[09:16:58|Info ] [0mMAVSDK version: v0.50.0 (mavsdk_impl.cpp:28)
+| DEBUG  2022-03-02 21:16:58,671| Drone0     | Connected to mavsdk_server!
+| INFO   2022-03-02 21:16:58,673| Drone0     | -- Arming 1
+| INFO   2022-03-02 21:16:58,679| Drone0     | -- Setting initial setpoint 1
+| INFO   2022-03-02 21:16:58,680| Drone0     | -- Starting offboard 1
+| INFO   2022-03-02 21:16:58,691| Drone0     | -- Setting second setpoint 1
+| INFO   2022-03-02 21:17:03,698| Drone0     | END initialize
+| INFO   2022-03-02 21:17:03,698| Drone0     | START mission

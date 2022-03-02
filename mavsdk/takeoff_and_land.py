@@ -28,8 +28,8 @@ async def run():
     await asyncio.sleep(5)
 
     print("-- Do Action")
-    #await drone.action.goto_location(40.54490101775458, -4.0131660745683435, 5, 0)
-    #await drone.action.do_orbit(radius_m=7, velocity_ms=1,yaw_behavior=mavsdk.action.OrbitYawBehavior(0), latitude_deg=40.54490101775458, longitude_deg=-4.0131660745683435, absolute_altitude_m=5)
+    await drone.action.goto_location(40.545148, -4.012101, 5, 0)
+    await drone.action.do_orbit(radius_m=7, velocity_ms=1,yaw_behavior=mavsdk.action.OrbitYawBehavior(0), latitude_deg=40.545148, longitude_deg=-4.0131660745683435, absolute_altitude_m=5)
 
     #await asyncio.sleep(5)
 

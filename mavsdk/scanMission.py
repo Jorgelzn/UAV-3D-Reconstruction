@@ -65,7 +65,7 @@ class Position():
 #                        THREADS CLASS                      #
 #############################################################
 
-class droneEightFigure(threading.Thread):
+class scanMission(threading.Thread):
 
   # Status variables of this Drone
   connected   = False # info of this Drone
@@ -119,7 +119,7 @@ class droneEightFigure(threading.Thread):
 
   ############################################
   ############################################
-  def __init__(self, drone_id, FLIGHT_ALTITUDE = 1.5, RATE = 50, RADIUS = 5.0, CYCLE_S = 8, barrier=None, lock=None, droneName="", camerasName=[]):
+  def __init__(self, drone_id, FLIGHT_ALTITUDE = 1.5, RATE = 50, RADIUS = 5.0, CYCLE_S = 8, barrier=None, lock=None, droneName="", camerasName=[],origin=[],dest=[]):
     threading.Thread.__init__(self)
     outputFile   = os.path.dirname(__file__)+"/mission_handler.log"
     config_root_logger(log_file=outputFile)
@@ -128,6 +128,12 @@ class droneEightFigure(threading.Thread):
     self.drone_id      = drone_id
     self.droneName     = droneName
     self.camerasName   = camerasName
+    
+    self.origin_x = origin[0]
+    self.origin_y = origin[1]
+    
+    self.dest_x = dest[0]
+    self.dest_y = dest[1]
 
     # variables to connect with Javascript
     #self.channel_layer   = get_channel_layer()
@@ -390,7 +396,7 @@ class droneEightFigure(threading.Thread):
     i=0
     running = True
     while running == True:
-      print("Se mueve a: "+str(self.path[i].x)+" "+str(self.path[i].y)+" "+str(self.path[i].z)+" "+str(self.path[i].yaw))
+      #print("Se mueve a: "+str(self.path[i].x)+" "+str(self.path[i].y)+" "+str(self.path[i].z)+" "+str(self.path[i].yaw))
 
       # This code doesn't use the vx, vy, vz nor ax, ay, az nor yaw_rate
       # maybe other command can exploit them
@@ -437,7 +443,6 @@ class droneEightFigure(threading.Thread):
     dadt = math.pi*2 / self.CYCLE_S # first derivative of angle with respect to time
     r    = self.RADIUS
     path = []
-
     for i in range(0, self.STEPS):
 
         position = Position()
@@ -450,41 +455,28 @@ class droneEightFigure(threading.Thread):
         #                         POSITION_TARGET_TYPEMASK_AZ_IGNORE
         position.target_system = 0 # will reset later when sending
         #position.target_component = PX4_COMPID
-
-        # calculate the parameter a which is an angle sweeping from -pi/2 to 3pi/2
-        # through the curve
-        a           = (-math.pi/2) + i*(math.pi*2/self.STEPS)
-        c           = math.cos(a)
-        c2a         = math.cos(2.0*a)
-        c4a         = math.cos(4.0*a)
-        c2am3       = c2a-3.0
-        c2am3_cubed = c2am3*c2am3*c2am3
-        s           = math.sin(a)
-        cc          = c*c
-        ss          = s*s
-        sspo        = (s*s)+1.0 # sin squared plus one
-        ssmo        = (s*s)-1.0 # sin squared minus one
-        sspos       = sspo*sspo
+        y_dist = -abs(self.origin_y - self.dest_y) * 111000
+        x_dist = -abs(self.origin_x - self.dest_x) * 111000 * math.cos(self.origin_y)
 
         # Position
         # https:#www.wolframalpha.com/input/?i=%28-r*cos%28a%29*sin%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29
-        position.x = -(r*c*s) / sspo
+        position.x = x_dist
         # https:#www.wolframalpha.com/input/?i=%28r*cos%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29
-        position.y =  (r*c)   / sspo
+        position.y =  y_dist
         position.z =  self.FLIGHT_ALTITUDE
 
         # Velocity
         # https:#www.wolframalpha.com/input/?i=derivative+of+%28-r*cos%28a%29*sin%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29+wrt+a
-        position.vx =   dadt*r* ( ss*ss + ss + (ssmo*cc) ) / sspos
+        position.vx =   0.0
         # https:#www.wolframalpha.com/input/?i=derivative+of+%28r*cos%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29+wrt+a
-        position.vy =  -dadt*r* s*( ss + 2.0*cc + 1.0 )    / sspos
+        position.vy =  0.0
         position.vz =  0.0
 
         # Acceleration
         # https:#www.wolframalpha.com/input/?i=second+derivative+of+%28-r*cos%28a%29*sin%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29+wrt+a
-        position.afx =  -dadt*dadt*8.0*r*s*c*((3.0*c2a) + 7.0)/ c2am3_cubed
+        position.afx =  0.0
         # https:#www.wolframalpha.com/input/?i=second+derivative+of+%28r*cos%28a%29%29%2F%28%28sin%28a%29%5E2%29%2B1%29+wrt+a
-        position.afy =  dadt*dadt*r*c*((44.0*c2a) + c4a - 21.0) / c2am3_cubed
+        position.afy =  0.0
         position.afz =  0.0
 
         # calculate yaw as direction of velocity

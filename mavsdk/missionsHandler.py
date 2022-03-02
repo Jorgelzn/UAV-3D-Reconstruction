@@ -5,6 +5,7 @@
 #############################################################
 from logger import *
 from droneEightFigure import droneEightFigure
+from scanMission import scanMission
 import os
 import threading
 import json
@@ -86,9 +87,13 @@ class missionsHandler(threading.Thread):
                     #e             = threading.Event()           # Event used as signal where some threads will continue its execution
                     #lock          = threading.Lock()            # Lock to let each variable to securely access global variables
                 """
-                mission = droneEightFigure(drone_id=i+1, droneName="Drone1", camerasName=["front"], FLIGHT_ALTITUDE=30, RATE=10, RADIUS=20, CYCLE_S=5)
+                #mission = droneEightFigure(drone_id=i+1, droneName="Drone1", camerasName=["front"], FLIGHT_ALTITUDE=30, RATE=10, RADIUS=20, CYCLE_S=5)
                 #else:
                 #    mission = drone_lazaro(drone_id=i+1, barrierArm=barrierArm, barrierMission=barrierMission, lock=lock, e=e)
+                
+                mission = scanMission(drone_id=i+1, droneName="Drone1",
+                                      camerasName=["front"], FLIGHT_ALTITUDE=30, RATE=10, RADIUS=20, CYCLE_S=5,
+                                      origin=[40.544289,-4.012101],dest=[40.545148,-4.011331])
                 
                 mission.name = "Drone"+str(i) #drone['General']['nameDrone']
                 self.threads.append(mission)
