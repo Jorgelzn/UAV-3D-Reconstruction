@@ -16,7 +16,7 @@ class Lidar:
         print('Connected!\n')
 
     def execute(self,vehicle_name,lidar_name,mode):
-        print('Scanning Has Started\n')
+        print('Scanning has started\n')
 
         # Get the default directory for AirSim
         airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
@@ -33,8 +33,8 @@ class Lidar:
 
         # Compute the focal length
         fov_rad = img_fov * np.pi/180
-        fdx = img_width /(np.tan(fov_rad/2.0)*2)
-        fdy = img_height /(np.tan(fov_rad/2.0)*2)
+        fdy = img_width /(np.tan(fov_rad/2.0)*2)
+        fdx = img_height /(np.tan(fov_rad/2.0)*2)
 
         # Create the camera intrinsic object
         camera_intrinsics = o3d.camera.PinholeCameraIntrinsic()
@@ -60,7 +60,7 @@ class Lidar:
                     responses = self.client.simGetImages([airsim.ImageRequest("front", airsim.ImageType.Scene, False, False)])
 
                     #IMAGE
-                    photo = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8)
+                    photo = np.frombuffer(responses[0].image_data_uint8, dtype=np.uint8)
                         
                     img = photo.reshape(responses[0].height, responses[0].width, 3)
                     img = img[...,::-1]   #brg to rgb
@@ -96,8 +96,7 @@ class Lidar:
                         pcd+=point
 
         except KeyboardInterrupt:
-            airsim.wait_key('Press any key to stop running this script')
-            print("Done!\n")
+            print("Scanning has stopped\n")
             output = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/lidar_rgb_scan.pcd"
             o3d.io.write_point_cloud(output, pcd)
             o3d.visualization.draw_geometries([pcd])

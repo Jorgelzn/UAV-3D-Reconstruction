@@ -9,7 +9,7 @@ def read(file):
     pcd = o3d.io.read_point_cloud(file)
     print(pcd)
     pcd_center = pcd.get_center()
-    pcd = pcd.crop(o3d.geometry.AxisAlignedBoundingBox(np.array(pcd_center)-10,np.array(pcd_center)+10))
+    pcd = pcd.crop(o3d.geometry.AxisAlignedBoundingBox(np.array(pcd_center)-5,np.array(pcd_center)+5))
     print("central point:",pcd_center)
     o3d.visualization.draw_geometries([pcd],width=1400,height=900)
     return pcd
@@ -43,13 +43,14 @@ def poisson_surface(pcd,depth):
 
 if __name__ == "__main__":
     pcd_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/lidar_rgb_scan.pcd"
+    object_pcd_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object_scan.pcd"
     object_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object.ply"
 
     pcd = read(pcd_file)
 
 
     #pointcloud segmentation
-    plane_model, inliers = pcd.segment_plane(distance_threshold=0.05, ransac_n=6, num_iterations=4000)
+    plane_model, inliers = pcd.segment_plane(distance_threshold=0.05, ransac_n=3, num_iterations=5000)
     inlier_cloud = pcd.select_by_index(inliers)
     outlier_cloud = pcd.select_by_index(inliers, invert=True)
 
@@ -58,17 +59,18 @@ if __name__ == "__main__":
     pcd = outlier_cloud
     print("object points:",pcd)
     #normals estimation
-    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=1.5, max_nn=20000))
+    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=1.5, max_nn=10000))
     pcd.orient_normals_to_align_with_direction(orientation_reference=np.array([0., 0., -1.]))
     o3d.visualization.draw_geometries([pcd],point_show_normal=True,width=1400,height=900)
 
+
     #mesh conversion
     #mesh = alpha_shape(pcd,0.5)
-    mesh = ball_pivoting(pcd,np.arange(0.05, 2.0, 0.05))
-    #mesh = poisson_surface(pcd,10)
-    #mesh.vertex_colors = o3d.utility.Vector3dVector(np.clip(np.asarray(mesh.vertex_colors), 0, 1))
+    #mesh = ball_pivoting(pcd,np.arange(0.05, 1, 0.05))
+    mesh = poisson_surface(pcd,15)
 
     o3d.visualization.draw_geometries([mesh],width=1400,height=800)
 
     #export
     o3d.io.write_triangle_mesh(object_file, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+    o3d.io.write_point_cloud(object_pcd_file, pcd)
