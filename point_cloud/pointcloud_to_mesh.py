@@ -2,7 +2,7 @@ import open3d as o3d
 from sys import argv
 import numpy as np
 import getpass
-import matplotlib.pyplot as plt
+import random
 
 def read(file):
     print("Loading point cloud")
@@ -10,6 +10,7 @@ def read(file):
     print(pcd)
     pcd_center = pcd.get_center()
     pcd = pcd.crop(o3d.geometry.AxisAlignedBoundingBox(np.array(pcd_center)-5,np.array(pcd_center)+5))
+    o3d.io.write_point_cloud(scan_cloud_file, pcd)
     print("central point:",pcd_center)
     o3d.visualization.draw_geometries([pcd],width=1400,height=900)
     return pcd
@@ -43,7 +44,8 @@ def poisson_surface(pcd,depth):
 
 if __name__ == "__main__":
     pcd_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/lidar_rgb_scan.pcd"
-    object_pcd_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object_scan.pcd"
+    object_cloud_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object_cloud.ply"
+    scan_cloud_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/scan_cloud.ply"
     object_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object.ply"
 
     pcd = read(pcd_file)
@@ -55,22 +57,25 @@ if __name__ == "__main__":
     outlier_cloud = pcd.select_by_index(inliers, invert=True)
 
     o3d.visualization.draw_geometries([pcd.select_by_index(inliers).paint_uniform_color([1, 0, 0]), pcd.select_by_index(inliers, invert=True).paint_uniform_color([0.6, 0.6, 0.6])],width=1400,height=900)
-    
+
     pcd = outlier_cloud
+    o3d.io.write_point_cloud(object_cloud_file, pcd)
     print("object points:",pcd)
     #normals estimation
-    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=1.5, max_nn=10000))
-    pcd.orient_normals_to_align_with_direction(orientation_reference=np.array([0., 0., -1.]))
-    o3d.visualization.draw_geometries([pcd],point_show_normal=True,width=1400,height=900)
+    #pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=1.5, max_nn=1000))
+    #pcd.orient_normals_consistent_tangent_plane(15)
+    #pcd.orient_normals_to_align_with_direction(orientation_reference=np.array([0., 0., -1.]))
+    #pcd.orient_normals_towards_camera_location(camera_location=np.array([0., 5., 0.]))
+    #o3d.visualization.draw_geometries([pcd],point_show_normal=True,width=1400,height=900)
 
 
     #mesh conversion
-    #mesh = alpha_shape(pcd,0.5)
-    #mesh = ball_pivoting(pcd,np.arange(0.05, 1, 0.05))
-    mesh = poisson_surface(pcd,15)
+    mesh = alpha_shape(pcd,0.7)
+    #mesh = ball_pivoting(pcd,np.arange(0.05, 0.2, 0.05))
+    #mesh = poisson_surface(pcd,15)
 
     o3d.visualization.draw_geometries([mesh],width=1400,height=800)
 
     #export
     o3d.io.write_triangle_mesh(object_file, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
-    o3d.io.write_point_cloud(object_pcd_file, pcd)
+    

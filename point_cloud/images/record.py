@@ -3,7 +3,48 @@ import airsim
 import numpy as np
 import time
 import keyboard  
+import json
 
+def generate_transform_matrix(pos,rot,center):
+    def Rx(theta):
+      return np.matrix([[ 1, 0            , 0            ],
+                        [ 0, np.cos(theta),-np.sin(theta)],
+                        [ 0, np.sin(theta), np.cos(theta)]])
+    def Ry(theta):
+      return np.matrix([[ np.cos(theta), 0, np.sin(theta)],
+                        [ 0            , 1, 0            ],
+                        [-np.sin(theta), 0, np.cos(theta)]])
+    def Rz(theta):
+      return np.matrix([[ np.cos(theta), -np.sin(theta), 0 ],
+                        [ np.sin(theta), np.cos(theta) , 0 ],
+                        [ 0            , 0             , 1 ]])
+
+    R = Rz(rot[2]) * Ry(rot[1]) * Rx(rot[0])
+    xf_rot = np.eye(4)
+    xf_rot[:3,:3] = R
+
+    xf_pos = np.eye(4)
+    xf_pos[:3,3] = pos - center
+    # barbershop_mirros_hd_dense:
+    # - camera plane is y+z plane, meaning: constant x-values
+    # - cameras look to +x
+
+    # Don't ask me...
+    extra_xf = np.matrix([
+        [-1, 0, 0, 0],
+        [ 0, 0, 1, 0],
+        [ 0, 1, 0, 0],
+        [ 0, 0, 0, 1]])
+    # NerF will cycle forward, so lets cycle backward.
+    shift_coords = np.matrix([
+        [0, 0, 1, 0],
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 1]])
+    xf = shift_coords @ extra_xf @ xf_pos
+    assert np.abs(np.linalg.det(xf) - 1.0) < 1e-4
+    xf = xf @ xf_rot
+    return xf
 
 #create directories for record
 def create_folders():
@@ -63,6 +104,9 @@ def record(client,fps):
     frame = time.time()
     img_number=0
     print("Started Recording")
+    data ={
+
+    }
     while True:
         clock = time.time()
         if clock-frame>fps:
@@ -72,6 +116,8 @@ def record(client,fps):
 
         if keyboard.is_pressed('s'):
             print("Stoped recording")
+            with open(directory+"/transforms.json", 'w') as outfile:
+                json.dump(data, outfile)
             break
 
     file.close()
