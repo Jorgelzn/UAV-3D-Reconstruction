@@ -13,6 +13,11 @@ model = pspnet_101_voc12() # load the pretrained model trained on Pascal VOC 201
 # load any of the 3 pretrained models
 images = os.listdir("input_images")
 
+#clean segmentation folder
+img_dir = "segmentation"
+for f in os.listdir(img_dir):
+    os.remove(os.path.join(img_dir, f))
+
 for img in tqdm(images): 
     out = model.predict_segmentation(
         inp="input_images/"+img,

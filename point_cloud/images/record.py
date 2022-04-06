@@ -4,47 +4,55 @@ import numpy as np
 import time
 import keyboard  
 import json
+import cv2
 
-def generate_transform_matrix(pos,rot,center):
-    def Rx(theta):
-      return np.matrix([[ 1, 0            , 0            ],
-                        [ 0, np.cos(theta),-np.sin(theta)],
-                        [ 0, np.sin(theta), np.cos(theta)]])
-    def Ry(theta):
-      return np.matrix([[ np.cos(theta), 0, np.sin(theta)],
-                        [ 0            , 1, 0            ],
-                        [-np.sin(theta), 0, np.cos(theta)]])
-    def Rz(theta):
-      return np.matrix([[ np.cos(theta), -np.sin(theta), 0 ],
-                        [ np.sin(theta), np.cos(theta) , 0 ],
-                        [ 0            , 0             , 1 ]])
+def closest_point_2_lines(oa, da, ob, db): # returns point closest to both rays of form o+t*d, and a weight factor that goes to 0 if the lines are parallel
+    da = da / np.linalg.norm(da)
+    db = db / np.linalg.norm(db)
+    c = np.cross(da, db)
+    denom = np.linalg.norm(c)**2
+    t = ob - oa
+    ta = np.linalg.det([t, db, c]) / (denom + 1e-10)
+    tb = np.linalg.det([t, da, c]) / (denom + 1e-10)
+    if ta > 0:
+	    ta = 0
+    if tb > 0:
+	    tb = 0
+    return (oa+ta*da+ob+tb*db) * 0.5, denom
 
-    R = Rz(rot[2]) * Ry(rot[1]) * Rx(rot[0])
-    xf_rot = np.eye(4)
-    xf_rot[:3,:3] = R
+def rotmat(a, b):
+	a, b = a / np.linalg.norm(a), b / np.linalg.norm(b)
+	v = np.cross(a, b)
+	c = np.dot(a, b)
+	s = np.linalg.norm(v)
+	kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+	return np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2 + 1e-10))
 
-    xf_pos = np.eye(4)
-    xf_pos[:3,3] = pos - center
-    # barbershop_mirros_hd_dense:
-    # - camera plane is y+z plane, meaning: constant x-values
-    # - cameras look to +x
+def variance_of_laplacian(image):
+	return cv2.Laplacian(image, cv2.CV_64F).var()
 
-    # Don't ask me...
-    extra_xf = np.matrix([
-        [-1, 0, 0, 0],
-        [ 0, 0, 1, 0],
-        [ 0, 1, 0, 0],
-        [ 0, 0, 0, 1]])
-    # NerF will cycle forward, so lets cycle backward.
-    shift_coords = np.matrix([
-        [0, 0, 1, 0],
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 1]])
-    xf = shift_coords @ extra_xf @ xf_pos
-    assert np.abs(np.linalg.det(xf) - 1.0) < 1e-4
-    xf = xf @ xf_rot
-    return xf
+def sharpness(imagePath):
+	image = cv2.imread(imagePath)
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	fm = variance_of_laplacian(gray)
+	return fm
+
+def qvec2rotmat(qvec):
+	return np.array([
+		[
+			1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,
+			2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],
+			2 * qvec[3] * qvec[1] + 2 * qvec[0] * qvec[2]
+		], [
+			2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],
+			1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,
+			2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]
+		], [
+			2 * qvec[3] * qvec[1] - 2 * qvec[0] * qvec[2],
+			2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
+			1 - 2 * qvec[1]**2 - 2 * qvec[2]**2
+		]
+	])
 
 #create directories for record
 def create_folders():
@@ -60,7 +68,7 @@ def create_folders():
         except FileExistsError:
             number+=1
 
-    os.mkdir(directory+"/mono_color_images")
+    os.mkdir(directory+"/images")
     os.mkdir(directory+"/stereo_color_images")
     os.mkdir(directory+"/stereo_color_images/left")
     os.mkdir(directory+"/stereo_color_images/right")
@@ -82,7 +90,10 @@ def take_photo(client,path,img_number,file):
                   (responses[0].camera_position.x_val, responses[0].camera_position.y_val, responses[0].camera_position.z_val,
                    responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val,
                    responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val))
+    qvec = np.array([responses[0].camera_orientation.w_val, responses[0].camera_orientation.x_val,
+            responses[0].camera_orientation.y_val, responses[0].camera_orientation.z_val])
 
+    tvec = np.array([responses[0].camera_position.x_val, responses[0].camera_position.y_val, responses[0].camera_position.z_val])
     # get numpy array
     photo_mono = np.fromstring(responses[0].image_data_uint8, dtype=np.uint8) 
     photo_stereo_L = np.fromstring(responses[1].image_data_uint8, dtype=np.uint8) 
@@ -93,31 +104,123 @@ def take_photo(client,path,img_number,file):
     img_stereo_L = photo_stereo_L.reshape(responses[1].height, responses[1].width, 3)
     img_stereo_R = photo_stereo_R.reshape(responses[2].height, responses[2].width, 3)
 
-    airsim.write_png(os.path.normpath(path+"/mono_color_images/img_mono_" +str(img_number)+".png"), img_mono)
+    airsim.write_png(os.path.normpath(path+"/images/img_mono_" +str(img_number)+".png"), img_mono)
     airsim.write_png(os.path.normpath(path+"/stereo_color_images/left/img_stereo_L_" +str(img_number)+".png"), img_stereo_L)  
     airsim.write_png(os.path.normpath(path+"/stereo_color_images/right/img_stereo_R_" +str(img_number)+".png"), img_stereo_R) 
-
+    name = os.path.normpath("img_mono_" +str(img_number)+".png")
+    print(tvec)
+    return name,qvec,tvec
 
 def record(client,fps):
     directory = create_folders()
     file = open(directory+"/positions.txt", "w")
-    frame = time.time()
+    actual_frame = time.time()
     img_number=0
-    print("Started Recording")
-    data ={
+    AABB_SCALE = 16
+    # Get the default directory for AirSim
+    airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
 
-    }
+    # Load the settings file
+    with open(os.path.join(airsim_path, 'settings.json'), 'r') as fp:
+        data = json.load(fp)
+    # Get the camera intrinsics
+    capture_settings = data['CameraDefaults']['CaptureSettings'][0]
+    img_width = capture_settings['Width']
+    img_height = capture_settings['Height']
+    img_fov = capture_settings['FOV_Degrees']
+    # Compute the focal length
+    fov_rad = img_fov * np.pi/180
+    fdy = img_width /(np.tan(fov_rad/2.0)*2)
+    fdx = img_height /(np.tan(fov_rad/2.0)*2)
+    bottom = np.array([0.0, 0.0, 0.0, 1.0]).reshape([1, 4])
+    out = {
+		"camera_angle_x": fov_rad,
+		"camera_angle_y": fov_rad,
+		"fl_x": fdy,
+		"fl_y": fdx,
+		"k1": 0,
+		"k2": 0,
+		"p1": 0,
+		"p2": 0,
+		"cx": img_width/2,
+		"cy": img_height/2,
+		"w": img_width,
+		"h": img_height,
+		"aabb_scale": AABB_SCALE,
+		"frames": [],
+	}
+    up = np.zeros(3)
+    print("Started Recording")
     while True:
         clock = time.time()
-        if clock-frame>fps:
-            take_photo(client,directory,img_number,file)
+        if clock-actual_frame>fps:
+            name,qvec,tvec = take_photo(client,directory,img_number,file)
             img_number+=1
-            frame =clock
+
+            b=sharpness(directory+"/images/"+name)
+            print(name, "sharpness=",b)
+            R = qvec2rotmat(-qvec)
+            t = tvec.reshape([3,1])
+            m = np.concatenate([np.concatenate([R, t], 1), bottom], 0)
+            c2w = np.linalg.inv(m)
+            c2w[0:3,2] *= -1 # flip the y and z axis
+            c2w[0:3,1] *= -1
+            c2w = c2w[[1,0,2,3],:] # swap y and z
+            c2w[2,:] *= -1 # flip whole world upside down
+
+            up += c2w[0:3,1]
+            #print(c2w)
+            name = "./images/"+name
+            frame={"file_path":name,"sharpness":b,"transform_matrix": c2w}
+            out["frames"].append(frame)
+
+            actual_frame =clock
 
         if keyboard.is_pressed('s'):
             print("Stoped recording")
-            with open(directory+"/transforms.json", 'w') as outfile:
-                json.dump(data, outfile)
+            nframes = len(out["frames"])
+            up = up / np.linalg.norm(up)
+            print("up vector was", up)
+            R = rotmat(up,[0,0,1]) # rotate up vector to [0,0,1]
+            R = np.pad(R,[0,1])
+            R[-1, -1] = 1
+
+
+            for f in out["frames"]:
+                f["transform_matrix"] = np.matmul(R, f["transform_matrix"]) # rotate up to be the z axis
+
+            # find a central point they are all looking at
+            print("computing center of attention...")
+            totw = 0.0
+            totp = np.array([0.0, 0.0, 0.0])
+            for f in out["frames"]:
+                mf = f["transform_matrix"][0:3,:]
+                for g in out["frames"]:
+                    mg = g["transform_matrix"][0:3,:]
+                    p, w = closest_point_2_lines(mf[:,3], mf[:,2], mg[:,3], mg[:,2])
+                    if w > 0.01:
+                        totp += p*w
+                        totw += w
+                
+            totp /= totw
+            print(totp) # the cameras are looking at totp
+            for f in out["frames"]:
+                f["transform_matrix"][0:3,3] -= totp
+
+            avglen = 0.
+            for f in out["frames"]:
+                avglen += np.linalg.norm(f["transform_matrix"][0:3,3])
+            avglen /= nframes
+            print("avg camera distance from origin", avglen)
+            for f in out["frames"]:
+                f["transform_matrix"][0:3,3] *= 4.0 / avglen # scale to "nerf sized"
+
+            for f in out["frames"]:
+                f["transform_matrix"] = f["transform_matrix"].tolist()
+            print(nframes,"frames")
+            print("writing",directory+"/transforms.json")
+            with open(directory+"/transforms.json", "w") as outfile:
+                json.dump(out, outfile, indent=2)
             break
 
     file.close()
@@ -127,7 +230,7 @@ if __name__=="__main__":
 
     client = airsim.VehicleClient()
     client.confirmConnection()
-    record(client,0.2)
+    record(client,1)
 
 
 

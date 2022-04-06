@@ -8,7 +8,12 @@ background_range_r = range(background_color[0]-5,background_color[0]+5)
 background_range_g = range(background_color[1]-5,background_color[1]+5)
 background_range_b = range(background_color[2]-5,background_color[2]+5)
 
-images = os.listdir("images")
+images = os.listdir("input_images")
+
+#clean output folder
+img_dir = "output"
+for f in os.listdir(img_dir):
+    os.remove(os.path.join(img_dir, f))
 
 for image in tqdm(images):
     img = cv2.imread("input_images/"+image)

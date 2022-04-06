@@ -3,6 +3,7 @@ from sys import argv
 import numpy as np
 import getpass
 import random
+import os
 
 def read(file):
     print("Loading point cloud")
@@ -43,12 +44,16 @@ def poisson_surface(pcd,depth):
     return density_mesh
 
 if __name__ == "__main__":
-    pcd_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/lidar_rgb_scan.pcd"
-    object_cloud_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object_cloud.ply"
-    scan_cloud_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/scan_cloud.ply"
-    object_file = "C:/Users/"+getpass.getuser()+"/Documents/Airsim/object.ply"
 
-    pcd = read(pcd_file)
+    # Get the default directory for scan
+    scan_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"scan")
+
+    scan_file = os.path.join(scan_path,"lidar_scan.ply")
+    scan_cloud_file = os.path.join(scan_path,"scan_cloud.ply")
+    object_cloud_file = os.path.join(scan_path,"object_cloud.ply")
+    object_file = os.path.join(scan_path,"object.ply")
+
+    pcd = read(scan_file)
 
 
     #pointcloud segmentation
