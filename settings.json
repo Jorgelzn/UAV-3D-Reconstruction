@@ -18,10 +18,9 @@
     "CaptureSettings": [
       {
         "ImageType": 0,
-        "Width": 540,
-        "Height": 540,
-        "FOV_Degrees": 90,
-        "OrthoWidth": 5.12
+        "Width": 1920,
+        "Height": 1080,
+        "FOV_Degrees": 120
       }
     ]
   },
@@ -31,11 +30,11 @@
         "UseSerial": false,
         "LockStep": true,
         "UseTcp": true,
-        "TcpPort": 4561,
+        "TcpPort": 4560,
         "ControlIp": "remote",
         "ControlPortLocal": 14541,
         "ControlPortRemote": 14581,
-                                              "LocalHostIp": "172.31.0.1",
+                                                                "LocalHostIp": "172.17.240.1",
         "QgcHostIp": "127.0.0.1",
         "QgcPort": 14550,
           "Sensors": {
@@ -44,29 +43,28 @@
                 "Enabled" : true,
                 "NumberOfChannels": 1,
                 "RotationsPerSecond": 10,
-                "Range":15,
-                "PointsPerSecond": 10000,
+                "Range":30,
+                "PointsPerSecond": 30000,
                 "X": 0, "Y": 0, "Z": 0,
                 "Roll": 90, "Pitch": 0, "Yaw" : 0,
-                "VerticalFOVUpper": 0,
+                "VerticalFOVUpper": 360,
                 "VerticalFOVLower": 0,
-                "HorizontalFOVStart": 0,
-                "HorizontalFOVEnd": 180,
+                "HorizontalFOVStart": -90,
+                "HorizontalFOVEnd": 90,
                 "DrawDebugPoints":false,
                 "DataFrame": "SensorLocalFrame"
               }
           },
           "Cameras": {
             "front": {
-              "X": 0, "Y": 0, "Z": 0.15,
-              "Pitch": -24.0, "Roll": 0.0, "Yaw": 0.0,
+              "X": 0.5, "Y": 0, "Z": 0.10,
+              "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0,
               "CaptureSettings": [
                 {
                   "ImageType": 0,
-                  "Width": 540,
-                  "Height": 540,
-                  "FOV_Degrees": 90,
-                  "OrthoWidth": 5.12
+                  "Width": 1920,
+                  "Height": 1080,
+                  "FOV_Degrees": 120
                 }
               ]
             },

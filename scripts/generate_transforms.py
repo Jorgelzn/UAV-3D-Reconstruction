@@ -56,6 +56,7 @@ def qvec2rotmat(qvec):
 if __name__=="__main__":
 
     AABB_SCALE = 16
+    FOLDER = "segmentation"
 
     # Get the default directory for AirSim
     airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
@@ -98,7 +99,7 @@ if __name__=="__main__":
 
         for line in f:
             elems=line.split(" ") 
-            name = os.path.join(airsim_path,"scan","images",elems[0])
+            name = os.path.join(airsim_path,"scan",FOLDER,elems[0])
             b=sharpness(name)
             print(elems[0], "sharpness=",b)
             tvec = np.array(tuple(map(float, elems[1:4])))
@@ -156,5 +157,5 @@ if __name__=="__main__":
         f["transform_matrix"] = f["transform_matrix"].tolist()
     print(nframes,"frames")
     print("writing file")
-    with open(os.path.join(airsim_path,"scan","transforms.json"), "w") as outfile:
+    with open(os.path.join(airsim_path,"scan",FOLDER+"_transforms.json"), "w") as outfile:
         json.dump(out, outfile, indent=2)

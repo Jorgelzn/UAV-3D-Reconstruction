@@ -49,7 +49,7 @@ if __name__ == "__main__":
     scan_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"scan")
 
     scan_file = os.path.join(scan_path,"lidar_scan.ply")
-    scan_cloud_file = os.path.join(scan_path,"scan_cloud.ply")
+    scan_cloud_file = os.path.join(scan_path,"scene_cloud.ply")
     object_cloud_file = os.path.join(scan_path,"object_cloud.ply")
     object_file = os.path.join(scan_path,"object.ply")
 
