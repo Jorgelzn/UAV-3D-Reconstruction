@@ -8,7 +8,7 @@ from mavsdk.mission import (MissionItem, MissionPlan)
 
 async def run():
     drone = System()
-    await drone.connect(system_address="udp://:14551")
+    await drone.connect(system_address="udp://:14550")
 
     print("Waiting for drone to connect...")
     async for state in drone.core.connection_state():
@@ -23,11 +23,11 @@ async def run():
     termination_task = asyncio.ensure_future(
         observe_is_in_air(drone, running_tasks))
     
-    asyncio.ensure_future(print_position(drone))
+    #asyncio.ensure_future(print_position(drone))
     
     mission_items = []
-    mission_items.append(MissionItem(40.545148, -4.011331,
-                                     20,
+    mission_items.append(MissionItem(40.545003, -4.013085,
+                                     3,
                                      10,
                                      True,
                                      float('nan'),
@@ -36,8 +36,10 @@ async def run():
                                      float('nan'),
                                      float('nan'),
                                      float('nan'),
-                                     float('nan'),
                                      float('nan')))
+
+
+    await drone.action.do_orbit(5,1,90,40.545003, -4.013085,3)
 
 
     mission_plan = MissionPlan(mission_items)

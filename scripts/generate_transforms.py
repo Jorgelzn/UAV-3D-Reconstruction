@@ -55,8 +55,8 @@ def qvec2rotmat(qvec):
 
 if __name__=="__main__":
 
-    AABB_SCALE = 16
-    FOLDER = "segmentation"
+    AABB_SCALE = 8
+    FOLDER = "images"
 
     # Get the default directory for AirSim
     airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')

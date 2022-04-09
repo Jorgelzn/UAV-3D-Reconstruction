@@ -124,6 +124,6 @@ if __name__ == "__main__":
     lidar = Lidar()
     vehicle = "Drone1"
     lidar_name = "LidarSensor1"
-    lidar.execute(vehicle,lidar_name,1)
+    lidar.execute(vehicle,lidar_name,1.5)
 
 

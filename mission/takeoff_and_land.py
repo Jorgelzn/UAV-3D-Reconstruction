@@ -6,7 +6,7 @@ import mavsdk
 
 async def run():
     drone = mavsdk.System()
-    await drone.connect(system_address="udp://:14551")
+    await drone.connect(system_address="udp://:14550")
     print("Waiting for drone to connect...")
     async for state in drone.core.connection_state():
         if state.is_connected:
@@ -28,13 +28,13 @@ async def run():
     await asyncio.sleep(5)
 
     print("-- Do Action")
-    await drone.action.goto_location(40.545148, -4.012101, 5, 0)
-    await drone.action.do_orbit(radius_m=7, velocity_ms=1,yaw_behavior=mavsdk.action.OrbitYawBehavior(0), latitude_deg=40.545148, longitude_deg=-4.0131660745683435, absolute_altitude_m=5)
-
+    await drone.action.goto_location(40.545148, -4.012101, 3, 0)
+    await asyncio.sleep(5)
+    #await drone.action.do_orbit(5,1,mavsdk.action.OrbitYawBehavior(0),40.545003, -4.013085,3)
     #await asyncio.sleep(5)
 
-    #print("-- Landing")
-    #await drone.action.land()
+    print("-- Landing")
+    #await drone.action.return_to_launch()
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
