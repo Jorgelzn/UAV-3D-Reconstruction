@@ -22,12 +22,11 @@ async def run():
     running_tasks = [print_mission_progress_task]
     termination_task = asyncio.ensure_future(
         observe_is_in_air(drone, running_tasks))
-    
-    #asyncio.ensure_future(print_position(drone))
-    
+
     mission_items = []
-    mission_items.append(MissionItem(40.545003, -4.013085,
-                                     3,
+    mission_items.append(MissionItem(40.544389,
+                                     -4.012201,
+                                     25,
                                      10,
                                      True,
                                      float('nan'),
@@ -37,10 +36,18 @@ async def run():
                                      float('nan'),
                                      float('nan'),
                                      float('nan')))
-
-
-    await drone.action.do_orbit(5,1,90,40.545003, -4.013085,3)
-
+    mission_items.append(MissionItem(40.544289,
+                                     -4.012101,
+                                     25,
+                                     10,
+                                     True,
+                                     float('nan'),
+                                     float('nan'),
+                                     MissionItem.CameraAction.NONE,
+                                     float('nan'),
+                                     float('nan'),
+                                     float('nan'),
+                                     float('nan')))
 
     mission_plan = MissionPlan(mission_items)
 
@@ -63,10 +70,6 @@ async def print_mission_progress(drone):
         print(f"Mission progress: "
               f"{mission_progress.current}/"
               f"{mission_progress.total}")
-        
-async def print_position(drone):
-    async for position in drone.telemetry.position():
-        print(position)
 
 
 async def observe_is_in_air(drone, running_tasks):

@@ -3,7 +3,6 @@
 import asyncio
 import mavsdk
 
-
 async def run():
     drone = mavsdk.System()
     await drone.connect(system_address="udp://:14550")
@@ -19,22 +18,29 @@ async def run():
             print("Global position estimate ok")
             break
 
+    print("Fetching amsl altitude at home location....")
+    async for terrain_info in drone.telemetry.home():
+        absolute_altitude = terrain_info.absolute_altitude_m
+        break
+
     print("-- Arming")
     await drone.action.arm()
 
     print("-- Taking off")
+    await  drone.action.set_takeoff_altitude(3)
+    await drone.action.set_return_to_launch_altitude(3)
     await drone.action.takeoff()
 
-    await asyncio.sleep(5)
+    await asyncio.sleep(20)
 
-    print("-- Do Action")
-    await drone.action.goto_location(40.545148, -4.012101, 3, 0)
-    await asyncio.sleep(5)
-    #await drone.action.do_orbit(5,1,mavsdk.action.OrbitYawBehavior(0),40.545003, -4.013085,3)
-    #await asyncio.sleep(5)
+    flying_alt = absolute_altitude + 3
+
+    print("-- Scan area")
+    await drone.action.do_orbit(5,0.5,mavsdk.action.OrbitYawBehavior(0),40.545000, -4.013086,flying_alt)
+    await asyncio.sleep(150)
 
     print("-- Landing")
-    #await drone.action.return_to_launch()
+    await drone.action.return_to_launch()
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()

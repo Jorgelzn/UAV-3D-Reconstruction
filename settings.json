@@ -25,7 +25,7 @@
     ]
   },
   "Vehicles": {
-      "Drone1": {
+      "Drone": {
         "VehicleType": "PX4Multirotor",
         "UseSerial": false,
         "LockStep": true,
@@ -34,11 +34,11 @@
         "ControlIp": "remote",
         "ControlPortLocal": 14541,
         "ControlPortRemote": 14581,
-                                                                "LocalHostIp": "172.17.240.1",
+                                                                 "LocalHostIp": "172.17.240.1",
         "QgcHostIp": "127.0.0.1",
         "QgcPort": 14550,
           "Sensors": {
-              "LidarSensor1": { 
+              "Lidar": { 
                 "SensorType": 6,
                 "Enabled" : true,
                 "NumberOfChannels": 1,
