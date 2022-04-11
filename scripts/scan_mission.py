@@ -1,12 +1,21 @@
-#!/usr/bin/env python3
-
-import asyncio
-import mavsdk
+import os
 import scan
+import mavsdk
+import asyncio
 import numpy as np
+import open3d as o3d
 
 async def run(lat,lon):
 
+    #create mission folder
+    airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
+    n_missions = os.listdir(os.path.join(airsim_path,"data"))
+    if n_missions:
+        mission_path = os.path.join(airsim_path,"data","mission_"+str(len(n_missions)))
+        os.mkdir(mission_path)
+    else:
+        mission_path = os.path.join(airsim_path,"data","mission_0")
+        os.mkdir(mission_path)
 
     drone = mavsdk.System()
     await drone.connect(system_address="udp://:14550")
@@ -56,7 +65,8 @@ async def run(lat,lon):
     recognition_time = time_one_orbit*n_orbits
     await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),lat, lon,flying_alt)
     await asyncio.sleep(area_radius*2)
-    await lidar.make_scan(2,recognition_time)
+    scan_path = os.path.join(mission_path,"recognition")
+    await lidar.make_scan(2,recognition_time,scan_path)
 
     print("-- Landing")
     await drone.action.return_to_launch()

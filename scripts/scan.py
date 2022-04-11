@@ -22,21 +22,23 @@ class Lidar:
         self.lidar_name=lidar_name
         print('-- Connected to Airsim\n')
 
-    async def make_scan(self,fps,limit_time):
+    async def make_scan(self,fps,limit_time,scan_path):
         print('-- Scanning Started\n')
 
         init_time = time.time()
+
+        #create scan folder
+        os.mkdir(scan_path)
 
         # Get the default directory for AirSim
         airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
 
         #create file for data
-        file = open(os.path.join(airsim_path,"scan",'camera_data.txt'), 'w')
+        file = open(os.path.join(scan_path,"camera_data.txt"), 'w')
 
-        #clean images folder
-        img_dir = os.path.join(airsim_path,"scan","images")
-        for f in os.listdir(img_dir):
-            os.remove(os.path.join(img_dir, f))
+        #create images folder
+        images_path = os.path.join(scan_path,"images")
+        os.mkdir(images_path)
 
         # Load the settings file
         with open(os.path.join(airsim_path, 'settings.json'), 'r') as fp:
@@ -90,7 +92,7 @@ class Lidar:
             if clock-actual_frame>(1/fps):
                 actual_frame=clock
                 img_name = "image_"+str(img_number)+".png"
-                cv2.imwrite(os.path.join(airsim_path,"scan","images",img_name), img)
+                cv2.imwrite(os.path.join(images_path,img_name), img)
                 img_number+=1
 
                 #registrar posición de la camara
@@ -123,7 +125,7 @@ class Lidar:
   
         print("-- Scanning Stopped\n")
         file.close()
-        output = os.path.join(airsim_path,"scan","lidar_scan.ply")
+        output = os.path.join(scan_path,"lidar_scan.ply")
         o3d.io.write_point_cloud(output, pcd)
 
 
