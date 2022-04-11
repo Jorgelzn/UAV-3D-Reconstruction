@@ -62,7 +62,7 @@ async def run(origin,target):
     n_orbits=1
     recognition_time = time_one_orbit*n_orbits
     await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),target[0],target[1],flying_alt)
-    await asyncio.sleep(area_radius/(scan_speed/2))
+    await asyncio.sleep(area_radius)
 
     #create scan folder
     scan_path = os.path.join(mission_path,"recognition")
@@ -83,24 +83,26 @@ async def run(origin,target):
         lines = file.readlines()
         object_lat = float(lines[1])
         object_lon = float(lines[2])
+        altura = float(lines[3])
 
         area_radius = 10
         scan_speed = 1
         time_one_orbit = area_radius*2*np.pi/scan_speed
         n_orbits=1
         recognition_time = time_one_orbit*n_orbits
-        flying_alt = absolute_altitude+5
-
+        flying_alt = absolute_altitude + altura+0.5
+        
         print("-- Go to location of object",i,object_lat,object_lon)
         await drone.action.goto_location(object_lat,object_lon,flying_alt,0)
-        cord_range = 0.000001
+        cord_range = 0.0001
         async for state in drone.telemetry.position():
             if np.abs(object_lat)-cord_range<= np.abs(state.latitude_deg) <= np.abs(object_lat)+cord_range and np.abs(object_lon)-cord_range <= np.abs(state.longitude_deg) <= np.abs(object_lon)+cord_range:
                 print(f"Location reached")
                 break
+        
         print("-- Scanning object",i)
         await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,flying_alt)
-        await asyncio.sleep(area_radius/(scan_speed/2))
+        await asyncio.sleep(area_radius)
         await lidar.make_scan(0.5,recognition_time,object_dir)
 
     print("-- Landing")

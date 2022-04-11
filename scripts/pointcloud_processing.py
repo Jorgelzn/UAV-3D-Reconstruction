@@ -102,11 +102,11 @@ async def recognition(mission_path,origin):
         file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
         center = objects[i].get_center()
-
-        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1], center[2], ell=None, deg=True)
+        
+        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],73, ell=None, deg=True)
 
         #registrar posición global del objeto
-        file.write("latitud y longitud:\n%f\n%f\n" % (object_data[0],object_data[1]))
+        file.write("latitud,longitud y altura:\n%f\n%f\n%f\n" % (object_data[0],object_data[1],-object_data[2]))
 
         file.close()
 
@@ -116,6 +116,5 @@ if __name__ == "__main__":
     mission_path=os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"data","mission_0")
 
     recognition(mission_path,(40.544289,-4.012101))
-
 """
     
