@@ -20,10 +20,12 @@ class Lidar:
         self.client.confirmConnection()
         self.vehicle_name=vehicle_name
         self.lidar_name=lidar_name
-        print('Connected to Airsim\n')
+        print('-- Connected to Airsim\n')
 
-    async def execute(self,fps,time_limit):
-        print('Scanning Started\n')
+    async def make_scan(self,fps,limit_time):
+        print('-- Scanning Started\n')
+
+        init_time = time.time()
 
         # Get the default directory for AirSim
         airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
@@ -61,7 +63,7 @@ class Lidar:
         actual_frame= 0
         clock = 0
 
-        while clock<time_limit:
+        while clock<limit_time:
             
             #GET LIDAR DATA
             lidar_data = self.client.getLidarData(lidar_name=self.lidar_name,vehicle_name=self.vehicle_name)
@@ -117,9 +119,9 @@ class Lidar:
 
                     pcd+=point
 
-            clock+=time.time()*10**-9.7
-
-        print("Scanning Stopped\n")
+            clock=time.time()-init_time
+  
+        print("-- Scanning Stopped\n")
         file.close()
         output = os.path.join(airsim_path,"scan","lidar_scan.ply")
         o3d.io.write_point_cloud(output, pcd)
@@ -128,4 +130,4 @@ class Lidar:
 if __name__ == "__main__":
     lidar = Lidar("Drone","Lidar")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(lidar.execute(1.5,10))
+    loop.run_until_complete(lidar.make_scan(2,5))
