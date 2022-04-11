@@ -27,9 +27,6 @@ class Lidar:
 
         init_time = time.time()
 
-        #create scan folder
-        os.mkdir(scan_path)
-
         # Get the default directory for AirSim
         airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
 

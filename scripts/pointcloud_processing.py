@@ -4,34 +4,58 @@ import numpy as np
 import getpass
 import random
 import os
+import pymap3d as pm
+import matplotlib.pyplot as plt
 
 def read(file):
-    print("Loading point cloud")
+    print(" Loading point cloud...")
     pcd = o3d.io.read_point_cloud(file)
-    print(pcd)
-    pcd_center = pcd.get_center()
-    pcd = pcd.crop(o3d.geometry.AxisAlignedBoundingBox(np.array(pcd_center)-5,np.array(pcd_center)+5))
-    o3d.io.write_point_cloud(scan_cloud_file, pcd)
-    print("central point:",pcd_center)
-    o3d.visualization.draw_geometries([pcd],width=1400,height=900)
+    print(" ",pcd)
+
     return pcd
 
+def crop(pcd,output,range=5):
+    print(" Cropping point cloud...")
+    pcd_center = pcd.get_center()
+    pcd = pcd.crop(o3d.geometry.AxisAlignedBoundingBox(np.array(pcd_center)-range,np.array(pcd_center)+range))
+    o3d.io.write_point_cloud(output, pcd)
 
-def alpha_shape(pcd,alpha):
-    print("Calculating mesh with Alpha Shape alpha:",alpha)
+    return pcd
+
+def plane_segmentation(pcd,output,distance=0.05,ransac=3,iter=5000):
+    print(" Making plane segmentation...")
+    plane_model, inliers = pcd.segment_plane(distance_threshold=distance, ransac_n=ransac, num_iterations=iter)
+    inlier_cloud = pcd.select_by_index(inliers)
+    outlier_cloud = pcd.select_by_index(inliers, invert=True)
+    o3d.io.write_point_cloud(output, outlier_cloud)
+
+    return outlier_cloud
+    
+def alpha_shape(pcd,output,alpha=0.7):
+    print(" Calculating mesh with Alpha Shape...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     mesh.compute_vertex_normals()
-
+    o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
-def ball_pivoting(pcd,radii):
-    print("Calculating mesh with Ball Pivoting radius:",radii)
+def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.2, 0.05),radi=1.5,nn=1000,plane=15):
+    print(" Calculating mesh with Ball Pivoting...")
+    print(" Estimating normals...")
+    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=radi, max_nn=nn))
+    print(" Orienting normals...")
+    pcd.orient_normals_consistent_tangent_plane(plane)
+    print(" Creating mesh...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
-
+    o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
-def poisson_surface(pcd,depth):
-    print("Calculating mesh Poisson Surface Reconstruction depth:",depth)
+def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
+    print(" Calculating mesh Poisson Surface Reconstruction...")
+    print(" Estimating normals...")
+    pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=radi, max_nn=nn))
+    print(" Orienting normals...")
+    pcd.orient_normals_consistent_tangent_plane(15)
+    print(" Creating mesh...")
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
         mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd,depth)
 
@@ -41,46 +65,57 @@ def poisson_surface(pcd,depth):
     density_mesh.triangle_normals = mesh.triangle_normals
     density_mesh.vertex_colors = mesh.vertex_colors
 
+    o3d.io.write_triangle_mesh(output, density_mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+    
     return density_mesh
 
-if __name__ == "__main__":
+async def recognition(mission_path,origin):
+    recognition_path = os.path.join(mission_path,"recognition")
+    scan_path = os.path.join(recognition_path,"lidar_scan.ply")
+    crop_scan_path = os.path.join(recognition_path,"crop_scan.ply")
+    segmented_scan_path = os.path.join(recognition_path,"segmented_scan.ply")
 
-    # Get the default directory for scan
-    scan_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"scan")
-
-    scan_file = os.path.join(scan_path,"lidar_scan.ply")
-    scan_cloud_file = os.path.join(scan_path,"scene_cloud.ply")
-    object_cloud_file = os.path.join(scan_path,"object_cloud.ply")
-    object_file = os.path.join(scan_path,"object.ply")
-
-    pcd = read(scan_file)
-
+    pcd = read(scan_path)
 
     #pointcloud segmentation
-    plane_model, inliers = pcd.segment_plane(distance_threshold=0.05, ransac_n=3, num_iterations=5000)
-    inlier_cloud = pcd.select_by_index(inliers)
-    outlier_cloud = pcd.select_by_index(inliers, invert=True)
+    pcd = crop(pcd,crop_scan_path,range=30)
+    pcd = plane_segmentation(pcd,segmented_scan_path,0.5,50,5000)
 
-    o3d.visualization.draw_geometries([pcd.select_by_index(inliers).paint_uniform_color([1, 0, 0]), pcd.select_by_index(inliers, invert=True).paint_uniform_color([0.6, 0.6, 0.6])],width=1400,height=900)
+    #clustering
+    print(" Making clusters...")
+    labels = np.array(pcd.cluster_dbscan(eps=2, min_points=10))
+    labels_id = np.unique(labels)
+    objects = [o3d.geometry.PointCloud() for i in range(len(labels_id))]
 
-    pcd = outlier_cloud
-    o3d.io.write_point_cloud(object_cloud_file, pcd)
-    print("object points:",pcd)
-    #normals estimation
-    #pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=1.5, max_nn=1000))
-    #pcd.orient_normals_consistent_tangent_plane(15)
-    #pcd.orient_normals_to_align_with_direction(orientation_reference=np.array([0., 0., -1.]))
-    #pcd.orient_normals_towards_camera_location(camera_location=np.array([0., 5., 0.]))
-    #o3d.visualization.draw_geometries([pcd],point_show_normal=True,width=1400,height=900)
+    for i in range(len(labels)):
+        point = o3d.geometry.PointCloud()
+        point.points = o3d.utility.Vector3dVector(np.reshape(np.array(pcd.points[i]),(1,3)))
+        point.colors = o3d.utility.Vector3dVector(np.reshape(np.array(pcd.colors[i]),(1,3)))
+        objects[labels[i]] += point
 
+    for i in range(len(objects)):
+        object_path = os.path.join(mission_path,"object_"+str(i))
+        os.mkdir(object_path)
+        o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
+        
+        #create file for data
+        file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
-    #mesh conversion
-    mesh = alpha_shape(pcd,0.7)
-    #mesh = ball_pivoting(pcd,np.arange(0.05, 0.2, 0.05))
-    #mesh = poisson_surface(pcd,15)
+        center = objects[i].get_center()
 
-    o3d.visualization.draw_geometries([mesh],width=1400,height=800)
+        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1], center[2], ell=None, deg=True)
 
-    #export
-    o3d.io.write_triangle_mesh(object_file, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+        #registrar posición global del objeto
+        file.write("latitud y longitud:\n%f\n%f\n" % (object_data[0],object_data[1]))
+
+        file.close()
+
+"""
+if __name__ == "__main__":
+
+    mission_path=os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"data","mission_0")
+
+    recognition(mission_path,(40.544289,-4.012101))
+
+"""
     
