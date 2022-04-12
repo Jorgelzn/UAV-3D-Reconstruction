@@ -102,15 +102,9 @@ async def run(origin,target):
 
         object_alt = absolute_altitude + object_alt
 
-        if i>0:
-            async for state in drone.telemetry.position():
-                lat = state.latitude_deg
-                lon = state.longitude_deg
-                break
-            await go(drone,lat,lon,flying_alt,0.00001,0.01)      #after each scan, go up for survey altitude to evade colisions
-
         r_earth = 6371000 
         object_radius_lat  = object_lat  + (area_radius / r_earth) * (180 / np.pi);
+        
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
         async for state in drone.telemetry.position():
@@ -122,7 +116,13 @@ async def run(origin,target):
         print("-- Scanning object",i)
         await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
         await asyncio.sleep(20)
-        await lidar.make_scan(0.5,recognition_time,object_dir)
+        await lidar.make_scan(0.5,recognition_time,object_dir)      #scan object
+
+        async for state in drone.telemetry.position():
+            lat = state.latitude_deg
+            lon = state.longitude_deg
+            break
+        await go(drone,lat,lon,flying_alt,0.00001,0.01)      #after each scan, go up for survey altitude to evade colisions
 
     print("-- Landing")
     await drone.action.return_to_launch()
