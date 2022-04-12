@@ -1,11 +1,7 @@
 import open3d as o3d
-from sys import argv
 import numpy as np
-import getpass
-import random
 import os
 import pymap3d as pm
-import matplotlib.pyplot as plt
 
 def read(file):
     print(" Loading point cloud...")
@@ -98,16 +94,16 @@ async def recognition(mission_path,origin):
             object_path = os.path.join(mission_path,"object_"+str(i))
             os.mkdir(object_path)
             o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
-            
+            width = max(objects[i].get_oriented_bounding_box().extent)
             #create file for data
             file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
             center = objects[i].get_center()
             
-            object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],75, ell=None, deg=True)
+            object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],80.33497619628906, ell=None, deg=True)
 
             #registrar posición global del objeto
-            file.write("latitud,longitud y altura:\n%f\n%f\n%f\n" % (object_data[0],object_data[1],-object_data[2]))
+            file.write("latitud,longitud,altura y anchura:\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
 
             file.close()
 
