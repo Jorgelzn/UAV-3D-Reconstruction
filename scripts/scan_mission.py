@@ -73,9 +73,11 @@ async def run(origin,target):
     print("-- Detecting objets")
     await pointcloud_processing.recognition(mission_path,origin)
 
-    print("-- Starting individual scannings")
     objects_dirs = os.listdir(os.path.join(mission_path))
     objects_dirs.pop()
+
+    print("-- objects detected:",len(objects_dirs))
+    print("-- Starting individual scannings")
 
     for i in range(len(objects_dirs)):
         object_dir = os.path.join(mission_path,objects_dirs[i])
@@ -85,12 +87,12 @@ async def run(origin,target):
         object_lon = float(lines[2])
         altura = float(lines[3])
 
-        area_radius = 10
+        area_radius = 5
         scan_speed = 1
         time_one_orbit = area_radius*2*np.pi/scan_speed
         n_orbits=1
         recognition_time = time_one_orbit*n_orbits
-        flying_alt = absolute_altitude + altura+0.5
+        flying_alt = absolute_altitude + altura
         
         print("-- Go to location of object",i,object_lat,object_lon)
         await drone.action.goto_location(object_lat,object_lon,flying_alt,0)
@@ -107,6 +109,11 @@ async def run(origin,target):
 
     print("-- Landing")
     await drone.action.return_to_launch()
+
+    print("-- Starting objects processing")
+    for i in range(len(objects_dirs)):
+        print("-- Processing object",i)
+        pointcloud_processing.processing(os.path.join(mission_path,objects_dirs[i]))
 
 if __name__ == "__main__":
     lidar = scan.Lidar("Drone","Lidar")

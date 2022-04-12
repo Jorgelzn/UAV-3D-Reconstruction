@@ -94,27 +94,51 @@ async def recognition(mission_path,origin):
         objects[labels[i]] += point
 
     for i in range(len(objects)):
-        object_path = os.path.join(mission_path,"object_"+str(i))
-        os.mkdir(object_path)
-        o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
-        
-        #create file for data
-        file = open(os.path.join(object_path,"object_data.txt"), 'w')
+        if len(objects[i].points)>20:
+            object_path = os.path.join(mission_path,"object_"+str(i))
+            os.mkdir(object_path)
+            o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
+            
+            #create file for data
+            file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
-        center = objects[i].get_center()
-        
-        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],73, ell=None, deg=True)
+            center = objects[i].get_center()
+            
+            object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],75, ell=None, deg=True)
 
-        #registrar posición global del objeto
-        file.write("latitud,longitud y altura:\n%f\n%f\n%f\n" % (object_data[0],object_data[1],-object_data[2]))
+            #registrar posición global del objeto
+            file.write("latitud,longitud y altura:\n%f\n%f\n%f\n" % (object_data[0],object_data[1],-object_data[2]))
 
-        file.close()
+            file.close()
 
-"""
-if __name__ == "__main__":
+def processing(object_path):
+    lidar_scan_path = os.path.join(object_path,"lidar_scan.ply")
+    recogised_object_path = os.path.join(object_path,"recognised_object.ply")
+    crop_scan_path = os.path.join(object_path,"crop_scan.ply")
+    segmented_scan_path = os.path.join(object_path,"segmented_scan.ply")
+    object_mesh_path = os.path.join(object_path,"object.ply")
 
-    mission_path=os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"data","mission_0")
+    lidar_scan_cloud = read(lidar_scan_path)
+    recognised_object_cloud = read(recogised_object_path)
 
-    recognition(mission_path,(40.544289,-4.012101))
-"""
+    #pointcloud segmentation
+    lidar_scan_cloud = crop(lidar_scan_cloud,crop_scan_path,range=10)
+    lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,0.1,20,5000)
+
+    #merge pointclouds
+    for i in range(len(recognised_object_cloud.points)):
+        point = o3d.geometry.PointCloud()
+        point.points = o3d.utility.Vector3dVector(np.reshape(np.array(recognised_object_cloud.points[i]),(1,3)))
+        point.colors = o3d.utility.Vector3dVector(np.reshape(np.array(recognised_object_cloud.colors[i]),(1,3)))
+        lidar_scan_cloud += point
+
+    #make 3d object
+    #alpha_shape(lidar_scan_cloud,object_mesh_path)
+    ball_pivoting(lidar_scan_cloud,object_mesh_path)
+    #poisson_surface(lidar_scan_cloud,object_mesh_path)
+
+
+#if __name__ == "__main__":
+#    processing("C:/Users/jorge/Documents/AirSim/data/mission_1/object_1")
+
     

@@ -1,2 +1,2 @@
-# UAV-3D-Reconstruction
-In this project we have the goal of generating 3d models and mapping tools from data obtained with UAVs simulated in airsim
+# ARID: Aerial Reconstruction with Intelligent Drones
+With ARID we are creating a workflow for generating 3d models using drones simulated in Airsim
