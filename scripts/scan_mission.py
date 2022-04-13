@@ -94,11 +94,7 @@ async def run(origin,target):
         object_alt = float(lines[3])
         object_width = float(lines[4])
 
-        area_radius = object_width+1   #+1 to make sure object is in camera angle
-        scan_speed = 1
-        time_one_orbit = area_radius*2*np.pi/scan_speed
-        n_orbits=1
-        recognition_time = time_one_orbit*n_orbits
+        area_radius = object_width + 1   #+1 to make sure object is in camera angle
 
         object_alt = absolute_altitude + object_alt
 
@@ -107,16 +103,28 @@ async def run(origin,target):
         
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
-        async for state in drone.telemetry.position():
-            lat = state.latitude_deg
-            lon = state.longitude_deg
-            break 
-        await go(drone,lat,lon,object_alt,0.00001,0.01)          #go to scanning altitud of object
+        #define orbits and height jumps
+        jump = 0.5
+        ground_limit = absolute_altitude + 1
+        n_orbits = 1
+        scan_speed = 1
+        time_one_orbit = area_radius*2*np.pi/scan_speed
+        recognition_time = time_one_orbit*n_orbits
 
-        print("-- Scanning object",i)
-        await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
-        await asyncio.sleep(20)
-        await lidar.make_scan(0.5,recognition_time,object_dir)      #scan object
+        while object_alt>=ground_limit:             #loop for orbits in multiple altitudes until reaching limit
+                                 
+            async for state in drone.telemetry.position():
+                lat = state.latitude_deg
+                lon = state.longitude_deg
+                break 
+            await go(drone,lat,lon,object_alt,0.00001,0.01)          #go to scanning altitud of object
+
+            print("-- Scanning object",i)
+            await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
+            await asyncio.sleep(20)
+            await lidar.make_scan(0.5,recognition_time,object_dir)      #scan object
+            
+            object_alt-=jump
 
         async for state in drone.telemetry.position():
             lat = state.latitude_deg

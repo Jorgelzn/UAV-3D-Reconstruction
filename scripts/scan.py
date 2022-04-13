@@ -31,11 +31,18 @@ class Lidar:
         airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
 
         #create file for data
-        file = open(os.path.join(scan_path,"camera_data.txt"), 'w')
+        camara_data_path = os.path.join(scan_path,"camera_data.txt")
+        if os.path.exists(camara_data_path):
+            camera_data_file = open(camara_data_path, 'r+')
+            img_number=len(camera_data_file.readlines())
+        else:
+            camera_data_file = open(camara_data_path, 'w')
+            img_number=0
 
         #create images folder
         images_path = os.path.join(scan_path,"images")
-        os.mkdir(images_path)
+        if not os.path.isdir(images_path):
+            os.mkdir(images_path)
 
         # Load the settings file
         with open(os.path.join(airsim_path, 'settings.json'), 'r') as fp:
@@ -56,8 +63,13 @@ class Lidar:
         camera_intrinsics = o3d.camera.PinholeCameraIntrinsic()
         camera_intrinsics.set_intrinsics(img_width, img_height,fdx,fdy, img_width/2, img_height/2)
 
-        pcd = o3d.geometry.PointCloud()
-        img_number=0
+        #path for pointcloud
+        pointcloud_path = os.path.join(scan_path,"lidar_scan.ply")
+        
+        if os.path.exists(pointcloud_path):
+            pcd = o3d.io.read_point_cloud(pointcloud_path)
+        else:
+            pcd = o3d.geometry.PointCloud()
 
         actual_frame= 0
         clock = 0
@@ -93,7 +105,7 @@ class Lidar:
                 img_number+=1
 
                 #registrar posición de la camara
-                file.write("%s %f %f %f %f %f %f %f\n" %
+                camera_data_file.write("%s %f %f %f %f %f %f %f\n" %
                     (img_name,camera_translation[0],camera_translation[1],camera_translation[2],qw,qy,qz,qx))
 
 
@@ -121,12 +133,6 @@ class Lidar:
             clock=time.time()-init_time
   
         print("-- Scanning Stopped\n")
-        file.close()
-        output = os.path.join(scan_path,"lidar_scan.ply")
-        o3d.io.write_point_cloud(output, pcd)
+        camera_data_file.close()
+        o3d.io.write_point_cloud(pointcloud_path, pcd)
 
-
-if __name__ == "__main__":
-    lidar = Lidar("Drone","Lidar")
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(lidar.make_scan(2,5))
