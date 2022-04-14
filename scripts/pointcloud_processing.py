@@ -103,7 +103,7 @@ async def recognition(mission_path,origin):
             object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],80.33497619628906, ell=None, deg=True)
 
             #registrar posición global del objeto
-            file.write("latitud,longitud,altura y anchura:\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
+            file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
 
             file.close()
 

@@ -3,8 +3,8 @@ import scan
 import mavsdk
 import asyncio
 import numpy as np
-import pymap3d as pm
 import pointcloud_processing
+import image_classifier
 
 async def go(drone,lat,lon,alt,pos_range,alt_range):
     print("-- Go to location",lat,lon)
@@ -87,8 +87,10 @@ async def run(origin,target):
 
     for i in range(len(objects_dirs)):
         object_dir = os.path.join(mission_path,objects_dirs[i])
-        file = open(os.path.join(object_dir,"object_data.txt"), "r")
-        lines = file.readlines()
+
+        with open(os.path.join(object_dir,"object_data.txt"), "r") as file:
+            lines = file.readlines()
+
         object_lat = float(lines[1])
         object_lon = float(lines[2])
         object_alt = float(lines[3])
@@ -104,7 +106,7 @@ async def run(origin,target):
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
         #define orbits and height jumps
-        jump = 0.5
+        jump = 5    #0.5
         ground_limit = absolute_altitude + 1
         n_orbits = 1
         scan_speed = 1
@@ -121,7 +123,7 @@ async def run(origin,target):
 
             print("-- Scanning object",i)
             await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
-            await asyncio.sleep(20)
+            await asyncio.sleep(10)
             await lidar.make_scan(0.5,recognition_time,object_dir)      #scan object
             
             object_alt-=jump
@@ -137,10 +139,22 @@ async def run(origin,target):
 
     print("-- Starting objects processing")
     for i in range(len(objects_dirs)):
+        object_dir = os.path.join(mission_path,objects_dirs[i])
         print("-- Processing object",i)
-        pointcloud_processing.processing(os.path.join(mission_path,objects_dirs[i]))
+        pointcloud_processing.processing(object_dir)
+
+        print("-- Classifying object",i)
+
+        images_dir = os.path.join(object_dir,"images")
+
+        object_type,probability=image_classifier.classify(images_dir)
+
+        with open(os.path.join(object_dir,"object_data.txt"), "a") as file:
+            file.write(object_type+" with a mean probability of "+str(probability))
 
 if __name__ == "__main__":
+    origin_pos = (40.544289,-4.012101)
+    target_pos = (40.544729,-4.012503)
     lidar = scan.Lidar("Drone","Lidar")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run((40.544289,-4.012101),(40.544729,-4.012503)))
+    loop.run_until_complete(run(origin_pos,target_pos))
