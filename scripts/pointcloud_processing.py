@@ -31,10 +31,13 @@ def alpha_shape(pcd,output,alpha=0.7):
     print(" Calculating mesh with Alpha Shape...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     mesh.compute_vertex_normals()
+    mesh.density_mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) #invert 
+    mesh.scale(100, center=mesh.get_center())                                               #scale
+    #mesh.translate((0, 0, 0))                                                   #translate to origin (se traslada el centro del objecto, tener en cuenta altura del objeto)
     o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
-def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.2, 0.05),radi=1.5,nn=1000,plane=15):
+def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.1, 0.05),radi=1.5,nn=1000,plane=15):
     print(" Calculating mesh with Ball Pivoting...")
     print(" Estimating normals...")
     pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=radi, max_nn=nn))
@@ -42,6 +45,8 @@ def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.2, 0.05),radi=1.5,nn=1000,p
     pcd.orient_normals_consistent_tangent_plane(plane)
     print(" Creating mesh...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
+    mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])                      #invert 
+    mesh.scale(100, center=mesh.get_center())                                                       #scale
     o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
@@ -60,7 +65,8 @@ def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
     density_mesh.triangles = mesh.triangles
     density_mesh.triangle_normals = mesh.triangle_normals
     density_mesh.vertex_colors = mesh.vertex_colors
-
+    density_mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])  #invert 
+    density_mesh.scale(100, center=density_mesh.get_center())                           #scale
     o3d.io.write_triangle_mesh(output, density_mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     
     return density_mesh
@@ -90,7 +96,7 @@ async def recognition(mission_path,origin):
         objects[labels[i]] += point
 
     for i in range(len(objects)):
-        if len(objects[i].points)>20:
+        if len(objects[i].points)>50:
             object_path = os.path.join(mission_path,"object_"+str(i))
             os.mkdir(object_path)
             o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])

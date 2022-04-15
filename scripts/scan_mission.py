@@ -106,14 +106,15 @@ async def run(origin,target):
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
         #define orbits and height jumps
-        jump = 5    #0.5
+        n_jumps = 3
         ground_limit = absolute_altitude + 1
+        jump = (object_alt-ground_limit)/n_jumps
         n_orbits = 1
         scan_speed = 1
         time_one_orbit = area_radius*2*np.pi/scan_speed
         recognition_time = time_one_orbit*n_orbits
 
-        while object_alt>=ground_limit:             #loop for orbits in multiple altitudes until reaching limit
+        while object_alt>ground_limit:             #loop for orbits in multiple altitudes until reaching limit
                                  
             async for state in drone.telemetry.position():
                 lat = state.latitude_deg
