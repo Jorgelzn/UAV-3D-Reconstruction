@@ -123,16 +123,16 @@ def processing(object_path):
     lidar_scan_cloud = read(lidar_scan_path)
     recognised_object_cloud = read(recogised_object_path)
 
-    #pointcloud segmentation
-    lidar_scan_cloud = crop(lidar_scan_cloud,crop_scan_path,range=10)
-    lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,0.1,20,5000)
-
     #merge pointclouds
     for i in range(len(recognised_object_cloud.points)):
         point = o3d.geometry.PointCloud()
         point.points = o3d.utility.Vector3dVector(np.reshape(np.array(recognised_object_cloud.points[i]),(1,3)))
         point.colors = o3d.utility.Vector3dVector(np.reshape(np.array(recognised_object_cloud.colors[i]),(1,3)))
         lidar_scan_cloud += point
+
+    #pointcloud segmentation
+    lidar_scan_cloud = crop(lidar_scan_cloud,crop_scan_path,range=10)
+    lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,0.1,20,5000)
 
     #make 3d object
     #alpha_shape(lidar_scan_cloud,object_mesh_path)

@@ -4,65 +4,49 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 
-#load machine learning models
-
-#model = pspnet_50_ADE_20K() # load the pretrained model trained on ADE20k dataset
-#model = pspnet_101_cityscapes() # load the pretrained model trained on Cityscapes dataset
-model = pspnet_101_voc12() # load the pretrained model trained on Pascal VOC 2012 dataset
 
 # Get the default directory for images
-scan_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim',"scan")
-images_dir = os.path.join(scan_path,"images")
-images = os.listdir(images_dir)
+def segmentate(object_dir):
+    images_dir = os.path.join(object_dir,"images")
+    images = os.listdir(images_dir)
 
-#Make the segmentation prediction and create masks
+    #load machine learning models
 
+    #model = pspnet_50_ADE_20K() # load the pretrained model trained on ADE20k dataset
+    #model = pspnet_101_cityscapes() # load the pretrained model trained on Cityscapes dataset
+    model = pspnet_101_voc12() # load the pretrained model trained on Pascal VOC 2012 dataset
 
-masks_dir = os.path.join(scan_path,"masks")
+    #Make the segmentation prediction
 
-#clean masks folder
-for f in os.listdir(masks_dir ):
-    os.remove(os.path.join(masks_dir, f))
+    masks_dir = os.path.join(object_dir,"masks")
+    os.mkdir(masks_dir)
 
-print("Detecting background...")
+    print("Detecting background...")
 
-#make predictions
-for img in tqdm(images): 
-    out = model.predict_segmentation(
-        inp=os.path.join(images_dir,img),
-        out_fname=os.path.join(masks_dir,img)
-    )
+    #make predictions
+    for img in tqdm(images): 
+        out = model.predict_segmentation(
+            inp=os.path.join(images_dir,img),
+            out_fname=os.path.join(masks_dir,img)
+        )
 
-#Delete background using the masks
+    #Delete background using the masks
 
-#Define default background values
-background_color = [198,215,20]
-background_range_r = range(background_color[0]-5,background_color[0]+5)
-background_range_g = range(background_color[1]-5,background_color[1]+5)
-background_range_b = range(background_color[2]-5,background_color[2]+5)
+    #Define default background values
+    background_color = [197,215,20]
 
+    segmentation_dir = os.path.join(object_dir,"segmentation")
+    os.mkdir(segmentation_dir)
 
-segmentation_dir = os.path.join(scan_path,"segmentation")
+    print("Deleting background...")
 
-#clean segmentation folder
-for f in os.listdir(segmentation_dir):
-    os.remove(os.path.join(segmentation_dir, f))
+    #Segmentationf of the images
+    for img in tqdm(images):
+        image = cv2.imread(os.path.join(images_dir,img),cv2.IMREAD_UNCHANGED)
+        mask = cv2.imread(os.path.join(masks_dir,img),cv2.IMREAD_UNCHANGED)
 
-print("Deleting background...")
-
-#Segmentationf of the images
-for img in tqdm(images):
-    image = cv2.imread(os.path.join(images_dir,img))
-    mask = cv2.imread(os.path.join(masks_dir,img))
-    mask = np.dstack((mask, np.zeros((len(mask),len(mask[0])))))
-    
-    #create transparency mask
-    for row in range(len(mask)):
-        for  column in range(len(mask[0])):
-            if int(mask[row][column][0]) not in background_range_r and int(mask[row][column][1]) not in background_range_g and int(mask[row][column][2]) not in background_range_b:
-                mask[row][column][3]=255
-
-    #Apply mask to image           
-    image = np.dstack((image,mask[:,:,3]))
-
-    cv2.imwrite(os.path.join(segmentation_dir,img),image)
+        indices = np.where(np.all(mask != background_color, axis=-1))
+        indices =(indices[0],indices[1],3)
+        image = np.dstack((image, np.zeros(image.shape[:-1])))
+        image[indices]=255
+        cv2.imwrite(os.path.join(segmentation_dir,img),image)

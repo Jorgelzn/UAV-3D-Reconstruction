@@ -34,7 +34,7 @@
         "ControlIp": "remote",
         "ControlPortLocal": 14541,
         "ControlPortRemote": 14581,
-                                                                 "LocalHostIp": "172.17.240.1",
+                                                                       "LocalHostIp": "172.25.96.1",
         "QgcHostIp": "127.0.0.1",
         "QgcPort": 14550,
           "Sensors": {
@@ -43,7 +43,7 @@
                 "Enabled" : true,
                 "NumberOfChannels": 1,
                 "RotationsPerSecond": 10,
-                "Range":30,
+                "Range":100,
                 "PointsPerSecond": 30000,
                 "X": 0, "Y": 0, "Z": 0,
                 "Roll": 90, "Pitch": 0, "Yaw" : 0,

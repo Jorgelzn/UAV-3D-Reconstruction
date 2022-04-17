@@ -23,8 +23,6 @@ class Lidar:
         print('-- Connected to Airsim\n')
 
     async def make_scan(self,fps,limit_time,scan_path):
-        print('-- Scanning Started\n')
-
         init_time = time.time()
 
         # Get the default directory for AirSim
@@ -132,7 +130,6 @@ class Lidar:
 
             clock=time.time()-init_time
   
-        print("-- Scanning Stopped\n")
         camera_data_file.close()
         o3d.io.write_point_cloud(pointcloud_path, pcd)
 

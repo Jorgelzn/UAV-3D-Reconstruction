@@ -74,7 +74,10 @@ def train():
     model.save(os.path.join(os.path.dirname(__file__),"data","image_classification_model.h5"))
 
 
-def classify(images_path):
+def classify(object_dir):
+
+    images_path = os.path.join(object_dir,"images")
+
     test_model = tf.keras.models.load_model(os.path.join(os.path.dirname(__file__),"data","image_classification_model.h5"))
 
     with open(os.path.join(os.path.dirname(__file__),"data","images_class_info.json")) as json_file:
@@ -95,9 +98,6 @@ def classify(images_path):
     object_type = list(class_info)[np.argmax(object_count)]
     probability = max(prob_count)/len(os.listdir(images_path))
 
-    #print("\nPredicted class:",list(class_info)[predicted_class],"\nWith a probability of:",prediction.max())
+    with open(os.path.join(object_dir,"object_data.txt"), "a") as file:
+        file.write(object_type+" with a mean probability of "+str(probability))
 
-    return object_type,probability
-
-#train()
-#print(classify(os.path.join(os.path.dirname(__file__),"data","ARID_imagenet","casa")))

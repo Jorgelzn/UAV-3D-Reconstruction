@@ -5,6 +5,7 @@ import asyncio
 import numpy as np
 import pointcloud_processing
 import image_classifier
+import image_segmentator
 
 async def go(drone,lat,lon,alt,pos_range,alt_range):
     print("-- Go to location",lat,lon)
@@ -61,7 +62,7 @@ async def run(origin,target):
     flying_alt = absolute_altitude + 10
     await go(drone,target[0],target[1],flying_alt,0.00001,0.01)
 
-    print("-- Scan area")
+    print("-- Scanning area")
     area_radius = 30
     scan_speed = 5
     time_one_orbit = area_radius*2*np.pi/scan_speed
@@ -88,6 +89,8 @@ async def run(origin,target):
     for i in range(len(objects_dirs)):
         object_dir = os.path.join(mission_path,objects_dirs[i])
 
+        print("-- Scanning object",i)
+
         with open(os.path.join(object_dir,"object_data.txt"), "r") as file:
             lines = file.readlines()
 
@@ -109,20 +112,20 @@ async def run(origin,target):
         n_jumps = 3
         ground_limit = absolute_altitude + 1
         jump = (object_alt-ground_limit)/n_jumps
+        
         n_orbits = 1
         scan_speed = 1
         time_one_orbit = area_radius*2*np.pi/scan_speed
         recognition_time = time_one_orbit*n_orbits
 
-        while object_alt>ground_limit:             #loop for orbits in multiple altitudes until reaching limit
-                                 
+        for i in range(n_jumps):             #loop for orbits in multiple altitudes until reaching limit 
+            print("Orbit number",i)                   
             async for state in drone.telemetry.position():
                 lat = state.latitude_deg
                 lon = state.longitude_deg
                 break 
             await go(drone,lat,lon,object_alt,0.00001,0.01)          #go to scanning altitud of object
 
-            print("-- Scanning object",i)
             await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
             await asyncio.sleep(10)
             await lidar.make_scan(0.5,recognition_time,object_dir)      #scan object
@@ -140,18 +143,18 @@ async def run(origin,target):
 
     print("-- Starting objects processing")
     for i in range(len(objects_dirs)):
+
         object_dir = os.path.join(mission_path,objects_dirs[i])
+
         print("-- Processing object",i)
         pointcloud_processing.processing(object_dir)
 
-        print("-- Classifying object",i)
+        print("-- Classifying object")
+        image_classifier.classify(object_dir)
 
-        images_dir = os.path.join(object_dir,"images")
+        print("-- Segmentating Images")
+        image_segmentator.segmentate(object_dir)
 
-        object_type,probability=image_classifier.classify(images_dir)
-
-        with open(os.path.join(object_dir,"object_data.txt"), "a") as file:
-            file.write(object_type+" with a mean probability of "+str(probability))
 
 if __name__ == "__main__":
     origin_pos = (40.544289,-4.012101)
