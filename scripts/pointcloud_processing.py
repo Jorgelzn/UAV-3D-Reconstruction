@@ -18,7 +18,7 @@ def crop(pcd,output,range=5):
 
     return pcd
 
-def plane_segmentation(pcd,output,distance=0.05,ransac=3,iter=5000):
+def plane_segmentation(pcd,output,distance=0.5,ransac=50,iter=5000):
     print(" Making plane segmentation...")
     plane_model, inliers = pcd.segment_plane(distance_threshold=distance, ransac_n=ransac, num_iterations=iter)
     inlier_cloud = pcd.select_by_index(inliers)
@@ -31,13 +31,14 @@ def alpha_shape(pcd,output,alpha=0.7):
     print(" Calculating mesh with Alpha Shape...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
     mesh.compute_vertex_normals()
-    mesh.density_mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) #invert 
+    mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) #invert 
     mesh.scale(100, center=mesh.get_center())                                               #scale
-    #mesh.translate((0, 0, 0))                                                   #translate to origin (se traslada el centro del objecto, tener en cuenta altura del objeto)
+    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
+    mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
     o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
-def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.1, 0.05),radi=1.5,nn=1000,plane=15):
+def ball_pivoting(pcd,output,radii=np.arange(0.1, 0.2, 0.05),radi=1.5,nn=1000,plane=15):
     print(" Calculating mesh with Ball Pivoting...")
     print(" Estimating normals...")
     pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=radi, max_nn=nn))
@@ -47,6 +48,8 @@ def ball_pivoting(pcd,output,radii=np.arange(0.05, 0.1, 0.05),radi=1.5,nn=1000,p
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
     mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])                      #invert 
     mesh.scale(100, center=mesh.get_center())                                                       #scale
+    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
+    mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
     o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     return mesh
 
@@ -67,6 +70,8 @@ def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
     density_mesh.vertex_colors = mesh.vertex_colors
     density_mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])  #invert 
     density_mesh.scale(100, center=density_mesh.get_center())                           #scale
+    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
+    density_mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
     o3d.io.write_triangle_mesh(output, density_mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
     
     return density_mesh
@@ -81,11 +86,11 @@ async def recognition(mission_path,origin):
 
     #pointcloud segmentation
     pcd = crop(pcd,crop_scan_path,range=30)
-    pcd = plane_segmentation(pcd,segmented_scan_path,0.5,50,5000)
+    pcd = plane_segmentation(pcd,segmented_scan_path)
 
     #clustering
     print(" Making clusters...")
-    labels = np.array(pcd.cluster_dbscan(eps=2, min_points=10))
+    labels = np.array(pcd.cluster_dbscan(eps=10, min_points=50))
     labels_id = np.unique(labels)
     objects = [o3d.geometry.PointCloud() for i in range(len(labels_id))]
 
@@ -96,24 +101,23 @@ async def recognition(mission_path,origin):
         objects[labels[i]] += point
 
     for i in range(len(objects)):
-        if len(objects[i].points)>50:
-            object_path = os.path.join(mission_path,"object_"+str(i))
-            os.mkdir(object_path)
-            o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
-            width = max(objects[i].get_oriented_bounding_box().extent)
-            #create file for data
-            file = open(os.path.join(object_path,"object_data.txt"), 'w')
+        object_path = os.path.join(mission_path,"object_"+str(i))
+        os.mkdir(object_path)
+        o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
+        width = max(objects[i].get_oriented_bounding_box().extent[:2])
+        #create file for data
+        file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
-            center = objects[i].get_center()
+        center = objects[i].get_center()
             
-            object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],80.33497619628906, ell=None, deg=True)
+        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],80.33497619628906, ell=None, deg=True)
 
-            #registrar posición global del objeto
-            file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
+        #registrar posición global del objeto
+        file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
 
-            file.close()
+        file.close()
 
-def processing(object_path):
+def processing(object_path,mode=2):
     lidar_scan_path = os.path.join(object_path,"lidar_scan.ply")
     recogised_object_path = os.path.join(object_path,"recognised_object.ply")
     crop_scan_path = os.path.join(object_path,"crop_scan.ply")
@@ -132,15 +136,15 @@ def processing(object_path):
 
     #pointcloud segmentation
     lidar_scan_cloud = crop(lidar_scan_cloud,crop_scan_path,range=10)
-    lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,0.1,20,5000)
+    lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,0.1)
 
     #make 3d object
-    #alpha_shape(lidar_scan_cloud,object_mesh_path)
-    ball_pivoting(lidar_scan_cloud,object_mesh_path)
-    #poisson_surface(lidar_scan_cloud,object_mesh_path)
+    if mode==1:
+        alpha_shape(lidar_scan_cloud,object_mesh_path)
+    elif mode==2:
+        ball_pivoting(lidar_scan_cloud,object_mesh_path)
+    elif mode==3:
+        poisson_surface(lidar_scan_cloud,object_mesh_path)
 
-
-#if __name__ == "__main__":
-#    processing("C:/Users/jorge/Documents/AirSim/data/mission_1/object_1")
 
     

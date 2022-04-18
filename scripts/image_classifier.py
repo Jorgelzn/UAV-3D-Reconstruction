@@ -21,14 +21,14 @@ def train():
         target_size=(64,64),
         color_mode="rgb",
         class_mode="categorical",
-        batch_size=16,
+        batch_size=10,
         subset='training'
     )
 
     validation_generator = train_datagen.flow_from_directory(
         directory=dataset_path,
         target_size=(64,64),
-        batch_size=16,
+        batch_size=10,
         color_mode="rgb",
         class_mode='categorical',
         subset='validation') 
@@ -55,7 +55,7 @@ def train():
         vgg_model,          
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(256, activation="relu"),
-        tf.keras.layers.Dense(5,activation="softmax")
+        tf.keras.layers.Dense(4,activation="softmax")
     ])
 
     model.compile(optimizer="adam",loss="categorical_crossentropy",metrics="accuracy")
@@ -67,7 +67,7 @@ def train():
     history=model.fit_generator(generator=train_generator,
                         validation_data=validation_generator,
                         steps_per_epoch=STEP_SIZE_TRAIN,
-                        epochs=3)
+                        epochs=10)
 
     model.evaluate_generator(generator=validation_generator,steps=10)
 

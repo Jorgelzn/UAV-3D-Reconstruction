@@ -5,10 +5,9 @@ import asyncio
 import numpy as np
 import pointcloud_processing
 import image_classifier
-import image_segmentator
 
 async def go(drone,lat,lon,alt,pos_range,alt_range):
-    print("-- Go to location",lat,lon)
+    #print("-- Go to location",lat,lon)
     await drone.action.goto_location(lat,lon,alt,0)
     async for state in drone.telemetry.position():
         #print("drone target:",lat,lon,alt)
@@ -16,7 +15,7 @@ async def go(drone,lat,lon,alt,pos_range,alt_range):
         if ( np.abs(lat)-pos_range<= np.abs(state.latitude_deg) <= np.abs(lat)+pos_range and
              np.abs(lon)-pos_range <= np.abs(state.longitude_deg) <= np.abs(lon)+pos_range and
              np.abs(alt)-alt_range <= np.abs(state.absolute_altitude_m) <= np.abs(alt)+alt_range):
-            print(f"Location reached")
+            #print(f"Location reached")
             break
 
 async def run(origin,target):
@@ -109,7 +108,7 @@ async def run(origin,target):
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
         #define orbits and height jumps
-        n_jumps = 3
+        n_jumps = 5
         ground_limit = absolute_altitude + 1
         jump = (object_alt-ground_limit)/n_jumps
         
@@ -151,9 +150,6 @@ async def run(origin,target):
 
         print("-- Classifying object")
         image_classifier.classify(object_dir)
-
-        print("-- Segmentating Images")
-        image_segmentator.segmentate(object_dir)
 
 
 if __name__ == "__main__":
