@@ -35,7 +35,7 @@ def alpha_shape(pcd,output,alpha=0.7):
     mesh.scale(100, center=mesh.get_center())                                               #scale
     height_offset = mesh.get_oriented_bounding_box().extent[2]/2
     mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
-    o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+    o3d.io.write_triangle_mesh(output, mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     return mesh
 
 def ball_pivoting(pcd,output,radii=np.arange(0.1, 0.2, 0.05),radi=1.5,nn=1000,plane=15):
@@ -50,7 +50,7 @@ def ball_pivoting(pcd,output,radii=np.arange(0.1, 0.2, 0.05),radi=1.5,nn=1000,pl
     mesh.scale(100, center=mesh.get_center())                                                       #scale
     height_offset = mesh.get_oriented_bounding_box().extent[2]/2
     mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
-    o3d.io.write_triangle_mesh(output, mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+    o3d.io.write_triangle_mesh(output, mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     return mesh
 
 def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
@@ -72,7 +72,7 @@ def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
     density_mesh.scale(100, center=density_mesh.get_center())                           #scale
     height_offset = mesh.get_oriented_bounding_box().extent[2]/2
     density_mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
-    o3d.io.write_triangle_mesh(output, density_mesh, write_ascii=False, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=True, print_progress=True)
+    o3d.io.write_triangle_mesh(output, density_mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     
     return density_mesh
 
@@ -86,7 +86,7 @@ async def recognition(mission_path,origin):
 
     #pointcloud segmentation
     pcd = crop(pcd,crop_scan_path,range=30)
-    pcd = plane_segmentation(pcd,segmented_scan_path)
+    pcd = plane_segmentation(pcd,segmented_scan_path,distance=1)
 
     #clustering
     print(" Making clusters...")
@@ -122,7 +122,7 @@ def processing(object_path,mode=2):
     recogised_object_path = os.path.join(object_path,"recognised_object.ply")
     crop_scan_path = os.path.join(object_path,"crop_scan.ply")
     segmented_scan_path = os.path.join(object_path,"segmented_scan.ply")
-    object_mesh_path = os.path.join(object_path,"object.ply")
+    object_mesh_path = os.path.join(object_path,"object.obj")
 
     lidar_scan_cloud = read(lidar_scan_path)
     recognised_object_cloud = read(recogised_object_path)
