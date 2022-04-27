@@ -86,11 +86,11 @@ async def recognition(mission_path,origin):
 
     #pointcloud segmentation
     pcd = crop(pcd,crop_scan_path,range=30)
-    pcd = plane_segmentation(pcd,segmented_scan_path,distance=1)
+    pcd = plane_segmentation(pcd,segmented_scan_path,distance=0.6)
 
     #clustering
     print(" Making clusters...")
-    labels = np.array(pcd.cluster_dbscan(eps=10, min_points=50))
+    labels = np.array(pcd.cluster_dbscan(eps=10, min_points=100))
     labels_id = np.unique(labels)
     objects = [o3d.geometry.PointCloud() for i in range(len(labels_id))]
 
@@ -104,16 +104,18 @@ async def recognition(mission_path,origin):
         object_path = os.path.join(mission_path,"object_"+str(i))
         os.mkdir(object_path)
         o3d.io.write_point_cloud(os.path.join(object_path,"recognised_object.ply"), objects[i])
-        width = max(objects[i].get_oriented_bounding_box().extent[:2])
+        box = objects[i].get_axis_aligned_bounding_box()
+        anchura = max(abs(box.get_min_bound()-box.get_max_bound())[:2])
+        altura = abs(box.get_min_bound()[2])
         #create file for data
         file = open(os.path.join(object_path,"object_data.txt"), 'w')
 
         center = objects[i].get_center()
             
-        object_data = pm.ned2geodetic(center[0], center[1], center[2],origin[0],origin[1],80.33497619628906, ell=None, deg=True)
+        object_data = pm.ned2geodetic(center[0], center[1], altura,origin[0],origin[1],80.33497619628906, ell=None, deg=True)
 
         #registrar posición global del objeto
-        file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],width))
+        file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],anchura))
 
         file.close()
 

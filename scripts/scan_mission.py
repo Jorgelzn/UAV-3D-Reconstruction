@@ -58,7 +58,8 @@ async def run(origin,target):
     await drone.action.takeoff()
 
     await asyncio.sleep(15)
-    flying_alt = absolute_altitude + 15
+    altitud = 20
+    flying_alt = absolute_altitude + altitud
     await go(drone,target[0],target[1],flying_alt,0.00001,0.01)
 
     print("-- Scanning area")
@@ -101,7 +102,8 @@ async def run(origin,target):
         object_alt = float(lines[3])
         object_width = float(lines[4])
 
-        area_radius = object_width   
+        radius_offset = 1
+        area_radius = object_width+radius_offset
 
         object_alt = absolute_altitude + object_alt
 
@@ -112,13 +114,15 @@ async def run(origin,target):
         
         #define orbits and height jumps
         n_jumps = 3
-        ground_limit = absolute_altitude + 1
+        altitud = 1
+        ground_limit = absolute_altitude + altitud
         jump = (object_alt-ground_limit)/n_jumps
         n_fotos = 100
         n_orbits = 1
         scan_speed = 1
+        time_offset = 10
         time_one_orbit = area_radius*2*np.pi/scan_speed
-        recognition_time = time_one_orbit*n_orbits
+        recognition_time = time_one_orbit*n_orbits+time_offset
         fps = (n_fotos/n_jumps)/recognition_time
 
         for i in range(n_jumps):             #loop for orbits in multiple altitudes until reaching limit 
@@ -130,7 +134,7 @@ async def run(origin,target):
             await go(drone,lat,lon,object_alt,0.00001,0.01)          #go to scanning altitud of object
 
             await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),object_lat,object_lon,object_alt)
-            await asyncio.sleep(10)
+            await asyncio.sleep(20)
             await lidar.make_scan(fps,recognition_time,object_dir)      #scan object
             
             object_alt-=jump
