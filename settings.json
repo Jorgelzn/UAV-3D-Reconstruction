@@ -5,9 +5,7 @@
   "SimMode": "Multirotor",
   "ClockType": "SteppableClock",
   "SubWindows": [
-    {"WindowID": 0, "ImageType": 0, "CameraName": "front-left", "Visible": true},
-    {"WindowID": 1, "ImageType": 0, "CameraName": "front", "Visible": true},
-    {"WindowID": 2, "ImageType": 0, "CameraName": "front-right", "Visible": true}
+    {"WindowID": 1, "ImageType": 0, "CameraName": "front", "Visible": true}
   ],
   "OriginGeopoint": {
     "Latitude": 40.544289,
@@ -34,7 +32,7 @@
         "ControlIp": "remote",
         "ControlPortLocal": 14541,
         "ControlPortRemote": 14581,
-                                                                       "LocalHostIp": "172.25.96.1",
+                                                                           "LocalHostIp": "172.25.96.1",
         "QgcHostIp": "127.0.0.1",
         "QgcPort": 14550,
           "Sensors": {
