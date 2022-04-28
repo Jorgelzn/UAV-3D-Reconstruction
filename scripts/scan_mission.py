@@ -87,7 +87,7 @@ async def run(origin,target):
     objects_dirs.pop()
 
     print("-- objects detected:",len(objects_dirs))
-    print("-- Starting individual scannings")
+    print("-- Starting individual scanns")
 
     for i in range(len(objects_dirs)):
         object_dir = os.path.join(mission_path,objects_dirs[i])
@@ -102,7 +102,7 @@ async def run(origin,target):
         object_alt = float(lines[3])
         object_width = float(lines[4])
 
-        radius_offset = 1
+        radius_offset = 2
         area_radius = object_width+radius_offset
 
         object_alt = absolute_altitude + object_alt
@@ -114,9 +114,9 @@ async def run(origin,target):
         
         #define orbits and height jumps
         n_jumps = 3
-        altitud = 1
+        altitud = 1.5
         ground_limit = absolute_altitude + altitud
-        jump = (object_alt-ground_limit)/n_jumps
+        jump = (object_alt-ground_limit)/(n_jumps-1)
         n_fotos = 100
         n_orbits = 1
         scan_speed = 1
@@ -125,8 +125,8 @@ async def run(origin,target):
         recognition_time = time_one_orbit*n_orbits+time_offset
         fps = (n_fotos/n_jumps)/recognition_time
 
-        for i in range(n_jumps):             #loop for orbits in multiple altitudes until reaching limit 
-            print("Orbit number",i)                   
+        for j in range(n_jumps):             #loop for orbits in multiple altitudes until reaching limit 
+            print("Orbit number",j)                   
             async for state in drone.telemetry.position():
                 lat = state.latitude_deg
                 lon = state.longitude_deg
@@ -138,7 +138,8 @@ async def run(origin,target):
             await lidar.make_scan(fps,recognition_time,object_dir)      #scan object
             
             object_alt-=jump
-
+            
+        print("-- Object",i,"Scanned")
         async for state in drone.telemetry.position():
             lat = state.latitude_deg
             lon = state.longitude_deg

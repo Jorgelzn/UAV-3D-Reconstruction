@@ -83,7 +83,6 @@ def classify(object_dir):
     with open(os.path.join(os.path.dirname(__file__),"data","images_class_info.json")) as json_file:
         class_info = json.load(json_file)
         object_count = [0]*len(class_info)
-        prob_count = [0]*len(class_info)
 
     for image in tqdm(os.listdir(images_path)):
         img = cv2.imread(os.path.join(images_path,image), cv2.IMREAD_COLOR)
@@ -93,11 +92,10 @@ def classify(object_dir):
         prediction = test_model.predict(img)
 
         object_count[prediction.argmax()]+=1
-        prob_count[prediction.argmax()]+=prediction.max()
 
     object_type = list(class_info)[np.argmax(object_count)]
-    probability = max(prob_count)/len(os.listdir(images_path))
+    probability = max(object_count)/len(os.listdir(images_path))
 
     with open(os.path.join(object_dir,"object_data.txt"), "a") as file:
-        file.write(object_type+" with a mean probability of "+str(probability))
+        file.write(object_type+" with a probability of "+str(probability))
 
