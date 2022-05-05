@@ -1,0 +1,2 @@
+model_checkpoint_path: "object_classification_model"
+all_model_checkpoint_paths: "object_classification_model"
