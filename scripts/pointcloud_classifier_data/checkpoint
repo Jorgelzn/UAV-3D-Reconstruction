@@ -1,0 +1,2 @@
+model_checkpoint_path: "pointcloud_classification_model"
+all_model_checkpoint_paths: "pointcloud_classification_model"

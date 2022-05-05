@@ -9,7 +9,7 @@ def train():
     from tensorflow.keras.applications.vgg16 import VGG16
     from tensorflow.keras.applications.vgg16 import preprocess_input
 
-    dataset_path = os.path.join(os.path.dirname(__file__),"data","ARID_imagenet")
+    dataset_path = os.path.join(os.path.dirname(__file__),"image_classifier_data","ARID_imagenet")
 
     train_datagen= tf.keras.preprocessing.image.ImageDataGenerator(
             rescale=1./255,
@@ -45,7 +45,7 @@ def train():
 
     label_map = train_generator.class_indices
 
-    with open(os.path.join(os.path.dirname(__file__),"data","images_class_info.json"), 'w') as file:
+    with open(os.path.join(os.path.dirname(__file__),"image_classifier_data","images_class_info.json"), 'w') as file:
         file.write(json.dumps(label_map))
 
     vgg_model = VGG16(weights="imagenet", include_top=False, input_shape=(64, 64, 3))
@@ -55,7 +55,7 @@ def train():
         vgg_model,          
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(256, activation="relu"),
-        tf.keras.layers.Dense(4,activation="softmax")
+        tf.keras.layers.Dense(3,activation="softmax")
     ])
 
     model.compile(optimizer="adam",loss="categorical_crossentropy",metrics="accuracy")
@@ -71,16 +71,16 @@ def train():
 
     model.evaluate_generator(generator=validation_generator,steps=10)
 
-    model.save(os.path.join(os.path.dirname(__file__),"data","image_classification_model.h5"))
+    model.save(os.path.join(os.path.dirname(__file__),"image_classifier_data","image_classification_model.h5"))
 
 
 def classify(object_dir):
 
     images_path = os.path.join(object_dir,"images")
 
-    test_model = tf.keras.models.load_model(os.path.join(os.path.dirname(__file__),"data","image_classification_model.h5"))
+    test_model = tf.keras.models.load_model(os.path.join(os.path.dirname(__file__),"image_classifier_data","image_classification_model.h5"))
 
-    with open(os.path.join(os.path.dirname(__file__),"data","images_class_info.json")) as json_file:
+    with open(os.path.join(os.path.dirname(__file__),"image_classifier_data","images_class_info.json")) as json_file:
         class_info = json.load(json_file)
         object_count = [0]*len(class_info)
 
@@ -98,4 +98,5 @@ def classify(object_dir):
 
     with open(os.path.join(object_dir,"object_data.txt"), "a") as file:
         file.write(object_type+" with a probability of "+str(probability))
+
 
