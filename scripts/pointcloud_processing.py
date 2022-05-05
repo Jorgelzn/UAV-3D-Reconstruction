@@ -128,11 +128,10 @@ async def recognition(mission_path,origin,scan_range):
         object_data = pm.ned2geodetic(center[0], center[1], altura,origin[0],origin[1],80.33497619628906, ell=None, deg=True)
 
         #registrar posición global del objeto
-        file.write("latitud | longitud | altura | anchura | tipo\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],anchura))
-
+        file.write("latitud | longitud | altura | orbita | clase\n%f\n%f\n%f\n%f\n" % (object_data[0],object_data[1],object_data[2],anchura))
         file.close()
 
-def processing(object_path,mode=3):
+def processing(object_path,origin,mode=3):
     lidar_scan_path = os.path.join(object_path,"lidar_scan.ply")
     recogised_object_path = os.path.join(object_path,"recognised_object.ply")
     crop_scan_path = os.path.join(object_path,"crop_scan.ply")
@@ -156,6 +155,16 @@ def processing(object_path,mode=3):
     lidar_scan_cloud = crop(lidar_scan_cloud,crop_scan_path,range=anchura+offset_radius)
     lidar_scan_cloud = plane_segmentation(lidar_scan_cloud,segmented_scan_path,distance=0.01)
 
+    #save geodata
+    file = open(os.path.join(object_path,"object_geodata.txt"), 'w')
+    geobox = lidar_scan_cloud.get_axis_aligned_bounding_box()
+    c1=pm.ned2geodetic(geobox.get_min_bound()[0], geobox.get_min_bound()[1], 80.33497619628906,origin[0],origin[1],80.33497619628906, ell=None, deg=True)[:2]
+    c2=pm.ned2geodetic(geobox.get_min_bound()[0], geobox.get_max_bound()[1], 80.33497619628906,origin[0],origin[1],80.33497619628906, ell=None, deg=True)[:2]
+    c3=pm.ned2geodetic(geobox.get_max_bound()[0], geobox.get_min_bound()[1], 80.33497619628906,origin[0],origin[1],80.33497619628906, ell=None, deg=True)[:2]
+    c4=pm.ned2geodetic(geobox.get_max_bound()[0], geobox.get_max_bound()[1], 80.33497619628906,origin[0],origin[1],80.33497619628906, ell=None, deg=True)[:2]
+    file.write("Object coordinates\n"+str(c1)+"\n"+str(c2)+"\n"+str(c3)+"\n"+str(c4)+"\n")
+    file.close()
+
     #make 3d object
     if mode==1:
         alpha_shape(lidar_scan_cloud,object_mesh_path)
@@ -163,4 +172,6 @@ def processing(object_path,mode=3):
         ball_pivoting(lidar_scan_cloud,object_mesh_path)
     elif mode==3:
         poisson_surface(lidar_scan_cloud,object_mesh_path)
+
+
 

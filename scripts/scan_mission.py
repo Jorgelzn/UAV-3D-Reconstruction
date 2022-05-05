@@ -18,7 +18,7 @@ async def go(drone,lat,lon,alt,pos_range,alt_range):
             #print(f"Location reached")
             break
 
-async def run(origin,target,scan_range,scan_altitude):
+async def run(origin,target,scan_range,scan_altitude,n_jumps):
 
     #create mission folder
     airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
@@ -112,7 +112,6 @@ async def run(origin,target,scan_range,scan_altitude):
         await go(drone,object_radius_lat,object_lon,flying_alt,0.00001,0.01)         #go in survey altitude to a safe distance to object ( to evade collisions)    
         
         #define orbits and height jumps
-        n_jumps = 3
         altitud = 1.5
         ground_limit = absolute_altitude + altitud
         jump = (object_alt-ground_limit)/(n_jumps-1)
@@ -154,17 +153,20 @@ async def run(origin,target,scan_range,scan_altitude):
         object_dir = os.path.join(mission_path,objects_dirs[i])
 
         print("-- Processing object",i)
-        pointcloud_processing.processing(object_dir)
+        pointcloud_processing.processing(object_dir,origin)
 
         print("-- Classifying object")
         image_classifier.classify(object_dir)
 
 
 if __name__ == "__main__":
+
     origin_pos = (40.544289,-4.012101)
     target_pos = (40.54379714481531, -4.011883591427401)
     scan_range = 35
     scan_altitud = 20
+    n_jumps = 3
+
     lidar = scan.Lidar("Drone","Lidar")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(origin_pos,target_pos,scan_range,scan_altitud))
+    loop.run_until_complete(run(origin_pos,target_pos,scan_range,scan_altitud,n_jumps))
