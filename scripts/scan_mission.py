@@ -18,7 +18,7 @@ async def go(drone,lat,lon,alt,pos_range,alt_range):
             #print(f"Location reached")
             break
 
-async def run(origin,target):
+async def run(origin,target,scan_range,scan_altitude):
 
     #create mission folder
     airsim_path = os.path.join(os.path.expanduser('~'), 'Documents', 'AirSim')
@@ -58,30 +58,29 @@ async def run(origin,target):
     await drone.action.takeoff()
 
     await asyncio.sleep(15)
-    altitud = 20
-    flying_alt = absolute_altitude + altitud
+
+    print("-- Going to location")
+    flying_alt = absolute_altitude + scan_altitude
     await go(drone,target[0],target[1],flying_alt,0.00001,0.01)
 
-    print("-- Scanning area")
-    area_radius = 30
     scan_speed = 5
-    time_one_orbit = area_radius*2*np.pi/scan_speed
+    time_one_orbit = scan_range*2*np.pi/scan_speed
     n_orbits=1
     n_fotos = 10
     recognition_time = time_one_orbit*n_orbits
     fps = n_fotos/recognition_time
 
-    await drone.action.do_orbit(area_radius,scan_speed,mavsdk.action.OrbitYawBehavior(0),target[0],target[1],flying_alt)
+    await drone.action.do_orbit(scan_range,scan_speed,mavsdk.action.OrbitYawBehavior(0),target[0],target[1],flying_alt)
     await asyncio.sleep(20)
 
     #create scan folder
     scan_path = os.path.join(mission_path,"recognition")
     os.mkdir(scan_path)
-
+    print("-- Scanning area")
     await lidar.make_scan(fps,recognition_time,scan_path)
 
     print("-- Detecting objets")
-    await pointcloud_processing.recognition(mission_path,origin)
+    await pointcloud_processing.recognition(mission_path,origin,scan_range)
 
     objects_dirs = os.listdir(os.path.join(mission_path))
     objects_dirs.pop()
@@ -102,7 +101,7 @@ async def run(origin,target):
         object_alt = float(lines[3])
         object_width = float(lines[4])
 
-        radius_offset = 2
+        radius_offset = 3
         area_radius = object_width+radius_offset
 
         object_alt = absolute_altitude + object_alt
@@ -163,7 +162,9 @@ async def run(origin,target):
 
 if __name__ == "__main__":
     origin_pos = (40.544289,-4.012101)
-    target_pos = (40.544729,-4.012503)
+    target_pos = (40.54379714481531, -4.011883591427401)
+    scan_range = 35
+    scan_altitud = 20
     lidar = scan.Lidar("Drone","Lidar")
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(origin_pos,target_pos))
+    loop.run_until_complete(run(origin_pos,target_pos,scan_range,scan_altitud))

@@ -56,7 +56,7 @@ def ball_pivoting(pcd,output,radii=np.arange(0.1, 0.2, 0.05),radi=1.5,nn=1000):
     o3d.io.write_triangle_mesh(output, mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     return mesh
 
-def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
+def poisson_surface(pcd,output,depth=15,radi=1.5,nn=1000):
     print(" Calculating mesh Poisson Surface Reconstruction...")
     box = pcd.get_axis_aligned_bounding_box()
     for i in range(len(pcd.points)//100):
@@ -89,7 +89,7 @@ def poisson_surface(pcd,output,depth=10,radi=1.5,nn=1000):
     
     return density_mesh
 
-async def recognition(mission_path,origin):
+async def recognition(mission_path,origin,scan_range):
     recognition_path = os.path.join(mission_path,"recognition")
     scan_path = os.path.join(recognition_path,"lidar_scan.ply")
     crop_scan_path = os.path.join(recognition_path,"crop_scan.ply")
@@ -98,12 +98,12 @@ async def recognition(mission_path,origin):
     pcd = read(scan_path)
 
     #pointcloud segmentation
-    pcd = crop(pcd,crop_scan_path,range=30)
+    pcd = crop(pcd,crop_scan_path,range=scan_range)
     pcd = plane_segmentation(pcd,segmented_scan_path,distance=0.7)
 
     #clustering
     print(" Making clusters...")
-    labels = np.array(pcd.cluster_dbscan(eps=10, min_points=100))
+    labels = np.array(pcd.cluster_dbscan(eps=10, min_points=200))
     labels_id = np.unique(labels)
     objects = [o3d.geometry.PointCloud() for i in range(len(labels_id))]
 
