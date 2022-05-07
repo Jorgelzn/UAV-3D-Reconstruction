@@ -30,11 +30,15 @@ def plane_segmentation(pcd,output,distance=0.01,ransac=50,iter=5000):
 def alpha_shape(pcd,output,alpha=0.7):
     print(" Calculating mesh with Alpha Shape...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd, alpha)
+
     mesh.compute_vertex_normals()
-    mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) #invert 
-    mesh.scale(100, center=mesh.get_center())                                               #scale
-    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
-    mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
+    R = mesh.get_rotation_matrix_from_xyz((np.pi,0,0))
+    mesh.rotate(R, center=mesh.get_center())                    #invert
+    mesh.scale(100, center=mesh.get_center())                   #scale
+    mesh_box = mesh.get_axis_aligned_bounding_box()
+    altura = abs(mesh_box.get_min_bound()-mesh_box.get_max_bound())[2]
+    mesh.translate((0, 0, altura/2),relative=False)                    #translate origin to center of object
+
     o3d.io.write_triangle_mesh(output, mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     return mesh
 
@@ -49,17 +53,21 @@ def ball_pivoting(pcd,output,radii=np.arange(0.1, 0.2, 0.05),radi=1.5,nn=1000):
     pcd.normals = o3d.utility.Vector3dVector(-normals)
     print(" Creating mesh...")
     mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd, o3d.utility.DoubleVector(radii))
-    mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])                      #invert 
-    mesh.scale(100, center=mesh.get_center())                                                       #scale
-    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
-    mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
+
+    R = mesh.get_rotation_matrix_from_xyz((np.pi,0,0))
+    mesh.rotate(R, center=mesh.get_center())                    #invert
+    mesh.scale(100, center=mesh.get_center())                   #scale
+    mesh_box = mesh.get_axis_aligned_bounding_box()
+    altura = abs(mesh_box.get_min_bound()-mesh_box.get_max_bound())[2]
+    mesh.translate((0, 0, altura/2),relative=False)                    #translate origin to center of object
+
     o3d.io.write_triangle_mesh(output, mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     return mesh
 
 def poisson_surface(pcd,output,depth=15,radi=1.5,nn=1000):
     print(" Calculating mesh Poisson Surface Reconstruction...")
     box = pcd.get_axis_aligned_bounding_box()
-    for i in range(len(pcd.points)//100):
+    for i in range(len(pcd.points)//100):                   #create ground under object
         area = [np.random.uniform(box.get_min_bound()[0],box.get_max_bound()[0]),np.random.uniform(box.get_min_bound()[1],box.get_max_bound()[1]),box.get_max_bound()[2]]
         point = o3d.geometry.PointCloud()
         point.points = o3d.utility.Vector3dVector(np.reshape(np.array(area),(1,3)))
@@ -81,10 +89,14 @@ def poisson_surface(pcd,output,depth=15,radi=1.5,nn=1000):
     density_mesh.triangles = mesh.triangles
     density_mesh.triangle_normals = mesh.triangle_normals
     density_mesh.vertex_colors = mesh.vertex_colors
-    density_mesh.transform([[-1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])  #invert 
-    density_mesh.scale(100, center=density_mesh.get_center())                           #scale
-    height_offset = mesh.get_oriented_bounding_box().extent[2]/2
-    density_mesh.translate((0, 0, height_offset))                                                   #translate to origin with height
+
+    R = density_mesh.get_rotation_matrix_from_xyz((np.pi,0,0))
+    density_mesh.rotate(R, center=density_mesh.get_center())                    #invert
+    density_mesh.scale(100, center=density_mesh.get_center())                   #scale
+    mesh_box = density_mesh.get_axis_aligned_bounding_box()
+    altura = abs(mesh_box.get_min_bound()-mesh_box.get_max_bound())[2]
+    density_mesh.translate((0, 0, altura/2),relative=False)                    #translate origin to center of object
+
     o3d.io.write_triangle_mesh(output, density_mesh, compressed=False, write_vertex_normals=True, write_vertex_colors=True, write_triangle_uvs=False, print_progress=True)
     
     return density_mesh
@@ -172,6 +184,4 @@ def processing(object_path,origin,mode=3):
         ball_pivoting(lidar_scan_cloud,object_mesh_path)
     elif mode==3:
         poisson_surface(lidar_scan_cloud,object_mesh_path)
-
-
 
